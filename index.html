@@ -8,6 +8,10 @@
     h1 { margin-bottom: 8px; }
     .sub { color:#667085; font-size:.9em }
 
+    #topBar{ display:flex; gap:14px; align-items:center; justify-content:space-between; }
+    #recentWrap{ display:flex; align-items:center; gap:8px; }
+    #recentInning{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:#ecfeff; border:1px solid #a5f3fc; color:#0e7490; }
+
     #stepProgress { margin: 12px 0 16px; display:flex; flex-wrap:wrap; gap:8px }
     .stepBox { padding:6px 10px; border:1px solid #cfd8e3; border-radius:6px; background:#f3f6fb; font-weight:700; font-size:14px }
     .stepBox.active { background:#2563eb; color:#fff; border-color:#2563eb }
@@ -32,6 +36,7 @@
     .btn-danger{ background:#ef4444; border-color:#ef4444; color:#fff }
     .actions{ display:flex; gap:8px; margin:6px 0 }
     .flash-bg{ background:#e0f2fe; transition: background 600ms ease }
+    .editing td.ce{ outline: 2px dashed #93c5fd; background:#eff6ff; }
 
     .lineup-input { margin: 12px 0 10px; border:1px solid #e5e7eb; padding:10px; border-radius:6px; background:#f9fafb }
     .lineup-input input, .lineup-input select { margin:2px }
@@ -45,10 +50,27 @@
     .badge{ display:inline-block; padding:2px 6px; border-radius:999px; font-size:12px; background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3 }
     .posTag{ width:56px; display:inline-block; color:#111827; font-weight:700 }
     .hint{ color:#6b7280; font-size:12px }
+/* 라인업 입력(최초 화면) 2열 레이아웃 */
+.li-grid{ display:flex; gap:28px; align-items:flex-start; }
+.li-col{ flex:1 1 0; min-width:340px; }
+.li-col .li-head{ margin:8px 0 6px; }
+.li-bench{ flex:0 0 320px; }             /* 오른쪽(대기) 칼럼 고정폭 */
+
+@media (max-width: 980px){
+  .li-grid{ flex-direction:column; }     /* 화면 좁아지면 세로로 접기 */
+  .li-bench{ flex:1 1 auto; }
+}
+
+/* 입력줄 내부 정렬(라벨-인풋-셀렉트) */
+.lineup-input .row input{ flex:1; }
+.lineup-input .row select{ flex:0 0 140px; }  /* 대기 기본 포지션 셀렉트 폭 */
+
   </style>
 </head>
 <body>
-  <h1>이글스 수비 성과평가 <span class="sub">– 단축키 입력 시스템 v0.9.6</span></h1>
+  <div id="topBar">
+    <h1>이글스 수비 성과평가 <span class="sub">– 단축키 입력 시스템 v0.9.6</span></h1>
+  </div>
 
   <!-- 라인업 입력 (선수명 단계용) -->
   <div class="lineup-input" id="lineupInput">
@@ -56,12 +78,26 @@
       <strong style="min-width:64px;">일정명</strong>
       <input id="scheduleName" placeholder="예: ’25 호크스 리그경기 1" style="flex:1;">
     </div>
-
-    <div><strong>선발 (수비 포지션 기준 1~9):</strong> <span class="hint">1 투 · 2 포 · 3 1루 · 4 2루 · 5 3루 · 6 유격 · 7 좌익 · 8 중견 · 9 우익</span></div>
+<!-- 선발·대기 2열 그리드 -->
+<div id="lineupInputGrid" class="li-grid">
+  <!-- 왼쪽: 선발 -->
+  <div class="li-col">
+    <div class="li-head">
+      <strong>선발 (수비 포지션 기준 1~9):</strong>
+      <span class="hint">1 투 · 2 포 · 3 1루 · 4 2루 · 5 3루 · 6 유격 · 7 좌익 · 8 중견 · 9 우익</span>
+    </div>
     <div id="starterInputs"></div>
+  </div>
 
-    <div style="margin-top:8px;"><strong>대기 (q~t):</strong> <span class="hint">이름 + 기본 포지션 선택(선택사항)</span></div>
+  <!-- 오른쪽: 대기 -->
+  <div class="li-col li-bench">
+    <div class="li-head">
+      <strong>대기 (q~t):</strong>
+      <span class="hint">이름 + 기본 포지션 선택(선택사항)</span>
+    </div>
     <div id="benchInputs"></div>
+  </div>
+</div>
 
     <div class="actions" style="margin-top:8px;">
       <button class="btn" id="applyLineupBtn">라인업 적용</button>
@@ -75,21 +111,31 @@
       <ul id="legendList"></ul>
     </div>
 
-    <div id="lineupSummary" style="flex:0 0 360px;">
-      <h3 style="margin:0 0 8px;">라인업</h3>
-      <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
-      <div id="lineupWrapper">
-        <div class="lineupPanel">
-          <h4>선발 (1~9)</h4>
-          <div id="starterList"></div>
-        </div>
-        <div class="lineupPanel">
-          <h4>교체 (q~t)</h4>
-          <div id="benchList"></div>
-        </div>
-      </div>
+<div id="lineupSummary" style="flex:0 0 360px;">
+  <!-- 라인업 헤더: 제목 왼쪽 / 최근 이닝 오른쪽 -->
+  <div class="lineupHeader" style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
+    <h3 style="margin:0;">라인업</h3>
+    <div id="recentWrap" aria-label="최근 이닝" style="display:flex;align-items:center;gap:6px;">
+      <span class="hint" style="margin:0;">최근 이닝:</span>
+      <span id="recentInning" class="badge" style="padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">-</span>
     </div>
   </div>
+
+  <!-- ✅ 이제 둘 다 라인업 박스 내부 -->
+  <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
+
+  <div id="lineupWrapper">
+    <div class="lineupPanel">
+      <h4>선발 (1~9)</h4>
+      <div id="starterList"></div>
+    </div>
+    <div class="lineupPanel">
+      <h4>교체 (q~t)</h4>
+      <div id="benchList"></div>
+    </div>
+  </div>
+</div>
+</div>
 
   <div id="stepProgress"></div>
   <div id="currentInputLine">[현재 입력 중] → </div>
@@ -99,6 +145,7 @@
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
       <h2 style="margin:0">입력 로그</h2>
       <div class="actions">
+        <button id="toggleEdit" class="btn">로그 수정: OFF</button>
         <button id="deleteSelected" class="btn">선택 삭제</button>
         <button id="exportCsv" class="btn">CSV 다운로드</button>
         <button id="resetAll" class="btn-danger">전체 초기화</button>
@@ -133,7 +180,7 @@
 - 일정명 입력: CSV 추출 시 (# 헤더 → 성과객체명, 값 = "일정명 + 공백 + #", 마지막 컬럼으로 '일정명' 추가)
 - 포수 필드플레이 특수흐름:
   6단계에서 [낫아웃 플레이 관련]/[도루 저지 관련] 선택 →
-  8단계에서 각 상세(낫아웃 4항목 / 도루 2항목) 선택 후 즉시 기록
+  8단계에서 각 상세 선택 후 즉시 기록
 =============================================================== */
 
 // === 입력 필드 감지 유틸 ===
@@ -296,7 +343,7 @@ function loadAll(){
       updateSchedulePreview();
     }
     const rows = JSON.parse(localStorage.getItem(LS.table)||'null');
-    if(Array.isArray(rows)) renderTableFrom(rows);
+    if(Array.isArray(rows)) { renderTableFrom(rows); updateRecentInningFromTable(); }
     const l = JSON.parse(localStorage.getItem(LS.lineup)||'null');
     if(l && l.lineupMap){
       lineupMap=l.lineupMap||{};
@@ -485,7 +532,7 @@ function resolveResOptions(){
   const char = at(5);
   if (grp === 'C') {
     if (seed === '[포수 땅볼]' || seed === '[포수 뜬공]') { setStepOptions(6, RES_OPTS); return; }
-    if (seed === '[포수 필드플레이]') { setStepOptions(6, C_FP_BASE); return; } // 일반 + 특수(낫아웃/도루) 진입 포함
+    if (seed === '[포수 필드플레이]') { setStepOptions(6, C_FP_BASE); return; } // 일반 + 특수 진입 포함
   }
   if (grp === '_1B') {
     if (seed === '[1루수 땅볼]' || seed === '[1루수 뜬공]') { setStepOptions(6, RES_OPTS); return; }
@@ -502,10 +549,7 @@ function resolveErrOptions(){
   const grp  = posToGroup(at(3));
   const seed = at(4);
   const res  = at(6);
-  if (grp === 'C') {
-    // 캐처 특수는 6단계에서 이미 선택, 7단계 고정 '-'
-    setStepOptions(7, ['-']); return;
-  }
+  if (grp === 'C') { setStepOptions(7, ['-']); return; } // 캐처 특수는 6단계에서 이미 선택
   if (grp === '_1B') { setStepOptions(7, ['-']); return; }
   if (seed === '[내야 뜬공]' || seed === '[외야 뜬공]' || seed === '[내야 필드플레이]' || seed === '[외야 필드플레이]') { setStepOptions(7, ['-']); return; }
   if (grp==='IF' && seed==='[내야 땅볼]' && at(5)==='[병살타성]') { setStepOptions(7, ERR_DP_ROLE); return; }
@@ -516,16 +560,14 @@ function resolveErrOptions(){
 function resolveFinalOptions(){
   const grp  = posToGroup(at(3));
   const seed = at(4);
-  const res  = at(6);
   const err  = at(7); // (호환용)
+  const res  = at(6);
 
   if (grp === 'C') {
     if (seed === '[포수 필드플레이]') {
-      // 특수는 6단계(res)에서 선택됨
       if (res === '[낫아웃 플레이 관련]') { setStepOptions(8, C_NA_FINAL); return; }
       if (res === '[도루 저지 관련]')   { setStepOptions(8, C_CS_FINAL); return; }
-      // (아주 옛날 데이터 호환)
-      if (err === '[낫아웃 플레이]')     { setStepOptions(8, C_NA_FINAL); return; }
+      if (err === '[낫아웃 플레이]')     { setStepOptions(8, C_NA_FINAL); return; } // 구버전 호환
       if (err === '[도루 저지 플레이]')  { setStepOptions(8, C_CS_FINAL); return; }
     }
     setStepOptions(8, ['-']); return;
@@ -627,11 +669,8 @@ function stepAdvance(){
   if (currentStep === 6 &&
       (at(6) === '[낫아웃 플레이 관련]' || at(6) === '[도루 저지 관련]')) {
     currentValues[7] = '-'; // 7단계 스킵
-    currentStep = 8;        // 8단계(최종 옵션)으로 이동
-    cascadeOptions();
-    renderAll();
-    saveAll();
-    return;
+    currentStep = 8;        // 8단계로 이동
+    cascadeOptions(); renderAll(); saveAll(); return;
   }
 
   // 포수/1루수의 일반 FP는 6단계에서 즉시 기록(특수 선택 제외)
@@ -729,16 +768,16 @@ function getDefenseCode(vals){
   }
 
   if (isC && seed === '[포수 땅볼]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'CG-S-H' : (res==='[실책]' ? 'CG-E-H' : null);
-    return (res==='[처리 성공]') ? 'CG-S' : (res==='[실책]' ? 'CG-E' : null);
+    if (char === '[안타성]') return (res==='[처리 성공]') ? 'G-S-H' : (res==='[실책]' ? 'G-E-H' : null);
+    return (res==='[처리 성공]') ? 'G-S-C' : (res==='[실책]' ? 'G-E-O' : null);
   }
   if (isC && seed === '[포수 뜬공]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'CF-S-H' : (res==='[실책]' ? 'CF-E-H' : null);
-    return (res==='[처리 성공]') ? 'CF-S' : (res==='[실책]' ? 'CF-E' : null);
+    if (char === '[안타성]') return (res==='[처리 성공]') ? 'F-S-H' : (res==='[실책]' ? 'F-E-H' : null);
+    return (res==='[처리 성공]') ? 'F-S' : (res==='[실책]' ? 'F-E' : null);
   }
 
   if (isC && seed === '[포수 필드플레이]') {
-    // ① 6단계 일반항목 즉시형
+    // ① 즉시형
     if (res === '[필드 플레이 중 어시스트]') return 'IFP-A';
     if (res === '[필드 플레이 중 풋아웃]')  return 'IFP-FO';
     if (res === '[빠른 커버로 진루 저지]')  return 'IFP-CV';
@@ -747,7 +786,7 @@ function getDefenseCode(vals){
     if (res === '[블로킹으로 진루 저지]')  return 'CFP-BLK';
     if (res === '[포일로 진루 허용]')      return 'CFP-PB';
 
-    // ② 특수 선택 후 8단계 세부 (현행: res 사용, 구버전: err 사용)
+    // ② 특수 세부(현행: res, 구버전: err)
     if (res === '[낫아웃 플레이 관련]' || err === '[낫아웃 플레이]') {
       if (fin === '[폭투 낫아웃 플레이 성공]') return 'CFP-K-WP-S';
       if (fin === '[포일 낫아웃 플레이 성공]') return 'CFP-K-PB-S';
@@ -764,12 +803,12 @@ function getDefenseCode(vals){
   }
 
   if (is1B && seed === '[1루수 땅볼]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? '1BGB-S-H' : (res==='[실책]' ? '1BGB-E-H' : null);
-    return (res==='[처리 성공]') ? '1BGB-S' : (res==='[실책]' ? '1BGB-E' : null);
+    if (char === '[안타성]') return (res==='[처리 성공]') ? 'G-S-H' : (res==='[실책]' ? 'G-E-H' : null);
+    return (res==='[처리 성공]') ? 'G-S-C' : (res==='[실책]' ? 'G-E-F1' : null);
   }
   if (is1B && seed === '[1루수 뜬공]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? '1BFB-S-H' : (res==='[실책]' ? '1BFB-E-H' : null);
-    return (res==='[처리 성공]') ? '1BFB-S' : (res==='[실책]' ? '1BFB-E' : null);
+    if (char === '[안타성]') return (res==='[처리 성공]') ? 'F-S-H' : (res==='[실책]' ? 'F-E-H' : null);
+    return (res==='[처리 성공]') ? 'F-S' : (res==='[실책]' ? 'F-E' : null);
   }
   if (is1B && seed === '[1루수 필드플레이]') {
     if (res === '[필드 플레이 중 어시스트]') return 'IFP-A';
@@ -903,8 +942,21 @@ function writeRowAndReset(){
   tr.insertCell(-1).textContent = code;
   tr.insertCell(-1).textContent = (score === 0 ? '0' : (score || '-'));
 
+  updateRecentInningFromTable();
+
   currentStep = 0; currentValues = Array(steps.length).fill('');
   cascadeOptions(); renderAll(); saveAll();
+}
+
+/* ====== 최근 이닝 표시 ====== */
+function updateRecentInningFromTable(){
+  const tbody = document.querySelector('#logTable tbody');
+  const first = tbody.rows[0];
+  const tgt = document.getElementById('recentInning');
+  if(!first){ tgt.textContent='-'; return; }
+  const inningCell = first.cells[2]; // 이닝
+  const val = inningCell ? inningCell.textContent : '';
+  tgt.textContent = stripBr(val) || '-';
 }
 
 /* ====== 표 직렬화/복구/CSV/삭제 ====== */
@@ -934,7 +986,17 @@ function renderTableFrom(rows){
     tr.insertCell(-1).textContent=(r.score!==undefined?r.score:'-');
   });
 }
-function csvEscape(v){ const s=(v??'').toString(); return '"'+s.replace(/"/g,'""')+'"'; }
+function csvEscape(v){
+  // 수식 인젝션 방지: 앞공백 제거 후 = + - @ 로 시작하면 ' 접두
+  const needsQuote = /^[=\-+@]/.test((v??'').toString().trimStart());
+  const safe = needsQuote ? ("'"+(v??'')) : (v??'');
+  const s = safe.toString();
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+function sanitizeFilename(name){
+  const s = (name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
+  return s || 'Eagles Defense Log';
+}
 function downloadCSV(){
   const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
   screenHeads.shift();
@@ -954,11 +1016,45 @@ function downloadCSV(){
   });
 
   const blob=new Blob(["\uFEFF"+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download = `Eagles Defense Log '${scheduleName || ''}'.csv`; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  const fname = `Eagles Defense Log '${sanitizeFilename(scheduleName)}'.csv`;
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
-function deleteSelected(){ const tbody=document.querySelector('#logTable tbody'); [...tbody.querySelectorAll('input.rowSel:checked')].forEach(cb=>cb.closest('tr').remove()); saveAll(); }
+function deleteSelected(){
+  const tbody=document.querySelector('#logTable tbody');
+  [...tbody.querySelectorAll('input.rowSel:checked')].forEach(cb=>cb.closest('tr').remove());
+  updateRecentInningFromTable();
+  saveAll();
+}
 
-// select-all & buttons
+/* ====== 로그 수정모드 ====== */
+let editMode = false;
+function setEditMode(on){
+  editMode = !!on;
+  const table = document.getElementById('logTable');
+  table.classList.toggle('editing', editMode);
+  const btn = document.getElementById('toggleEdit');
+  btn.textContent = `로그 수정: ${editMode?'ON':'OFF'}`;
+
+  // 열 인덱스: 0 chk, 1 seq, 2..(2+steps.length-1) 입력값 9칸, 그 뒤 record, code, score
+  const editableStart = 2;
+  const editableEnd   = 13; // 포함(이닝~점수)
+  const rows = table.tBodies[0].rows;
+  for (const tr of rows){
+    for (let c=editableStart; c<=editableEnd; c++){
+      const td = tr.cells[c];
+      if(!td) continue;
+      td.contentEditable = editMode ? 'true' : 'false';
+      td.classList.toggle('ce', editMode);
+    }
+  }
+  if(!editMode){ saveAll(); updateRecentInningFromTable(); }
+}
+document.getElementById('toggleEdit').addEventListener('click', ()=> setEditMode(!editMode));
+
+/* ====== select-all & buttons ====== */
 (function(){
   const selAll=document.getElementById('selectAll');
   selAll.addEventListener('change',()=>{ const boxes=[...document.querySelectorAll('#logTable tbody .rowSel')]; boxes.forEach(b=>b.checked=selAll.checked); });
@@ -972,6 +1068,7 @@ function deleteSelected(){ const tbody=document.querySelector('#logTable tbody')
     document.getElementById('lineupInput').style.display='block';
     document.getElementById('lineupSummary').style.display='none';
     clearLineupInputs(); clearAll(); cascadeOptions(); renderAll();
+    updateRecentInningFromTable();
   });
 })();
 
@@ -983,6 +1080,7 @@ window.addEventListener('load', ()=>{
   cascadeOptions();
   currentStep = autoSkipFrom(currentStep);
   renderAll();
+  updateRecentInningFromTable();
 });
 </script>
 </body>
