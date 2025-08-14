@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>이글스 수비 성과평가 – 단축키 입력 시스템 v0.9.4</title>
+  <title>이글스 수비 성과평가 – 단축키 입력 시스템 v0.9.5</title>
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; margin: 28px; }
     h1 { margin-bottom: 8px; }
@@ -48,14 +48,21 @@
   </style>
 </head>
 <body>
-  <h1>이글스 수비 성과평가 <span class="sub">– 단축키 입력 시스템 v0.9.4</span></h1>
+  <h1>이글스 수비 성과평가 <span class="sub">– 단축키 입력 시스템 v0.9.5</span></h1>
 
   <!-- 라인업 입력 (선수명 단계용) -->
   <div class="lineup-input" id="lineupInput">
+    <div class="row" style="margin-bottom:8px;">
+      <strong style="min-width:64px;">일정명</strong>
+      <input id="scheduleName" placeholder="예: ’25 호크스 리그경기 1" style="flex:1;">
+    </div>
+
     <div><strong>선발 (수비 포지션 기준 1~9):</strong> <span class="hint">1 투 · 2 포 · 3 1루 · 4 2루 · 5 3루 · 6 유격 · 7 좌익 · 8 중견 · 9 우익</span></div>
     <div id="starterInputs"></div>
+
     <div style="margin-top:8px;"><strong>대기 (q~t):</strong> <span class="hint">이름 + 기본 포지션 선택(선택사항)</span></div>
     <div id="benchInputs"></div>
+
     <div class="actions" style="margin-top:8px;">
       <button class="btn" id="applyLineupBtn">라인업 적용</button>
       <button class="btn" id="clearLineupBtn">입력 비우기</button>
@@ -70,6 +77,7 @@
 
     <div id="lineupSummary" style="flex:0 0 360px;">
       <h3 style="margin:0 0 8px;">라인업</h3>
+      <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
       <div id="lineupWrapper">
         <div class="lineupPanel">
           <h4>선발 (1~9)</h4>
@@ -85,7 +93,7 @@
 
   <div id="stepProgress"></div>
   <div id="currentInputLine">[현재 입력 중] → </div>
-  <div id="hint">ESC: 스텝 초기화 / Backspace: 한 단계 롤백 / 숫자키: 선택 / ` 또는 \\: 특수입력 / 선수선택: 1~9, q~t(한글자판 대응)</div>
+  <div id="hint">ESC: 스텝 초기화 / Backspace: 한 단계 롤백 / 숫자키: 선택 / 선수선택: 1~9, q~t(한글자판 대응)</div>
 
   <div class="log">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
@@ -120,11 +128,11 @@
   </div>
 
 <script>
-/* ===================== 수비 로직 사양 (v0.9.4) =====================
+/* ===================== 수비 로직 사양 (v0.9.5) =====================
 - 라인업 입력: 선발 1~9는 수비 포지션에 고정 매핑(1투,2포,3일,4이,5삼,6유,7좌,8중,9우)
-- 라인업 패널에 포지션 라벨과 함께 표시 (대기는 이름+기본 포지션 선택 가능)
-- 경기 입력 흐름은 기존과 동일(선수→포지션 수동 선택). 자동 지정/점프/₩ 옵션 없음.
-- 나머지 수비 로직은 v0.9.3과 동일
+- 일정명 입력: CSV 추출 시 (# 헤더 → 성과객체명, 값 = "일정명 + 공백 + #", 마지막 컬럼으로 '일정명' 추가)
+- ₩ 특수 입력 제거 (힌트/핫키)
+- 경기 입력 흐름은 기존과 동일(선수→포지션 수동 선택).
 =============================================================== */
 
 // === 입력 필드 감지 유틸 ===
@@ -137,8 +145,8 @@ function isTypingInEditable(e){
   );
 }
 
-/* ====== 라인업 상태 ====== */
-let starterKeys = ["1","2","3","4","5","6","7","8","9"]; // 입력 단축키
+/* ====== 라인업/일정 상태 ====== */
+let starterKeys = ["1","2","3","4","5","6","7","8","9"];
 let benchKeys   = ["q","w","e","r","t"];
 
 const STARTER_POS_LABEL = {
@@ -146,9 +154,10 @@ const STARTER_POS_LABEL = {
 };
 const POS_OPTIONS = ["[투수]","[포수]","[1루수]","[2루수]","[3루수]","[유격수]","[좌익수]","[중견수]","[우익수]"];
 
-let lineupMap = {};       // key → player name (선발/대기 공통)
-let benchPosMap = {};     // bench key(q~t) → default pos label string "[포수]" 등
+let lineupMap = {};       // key → player name
+let benchPosMap = {};     // bench key → default pos "[포수]" 등
 let lineupApplied = false;
+let scheduleName = '';    // 일정명
 
 /* ====== 단계/상태 ====== */
 const steps = [
@@ -167,7 +176,7 @@ let currentStep = 0;
 let currentValues = Array(steps.length).fill("");
 let logSeq = 0;
 
-/* ====== 선택지 사전 (이하: 기존 로직 그대로) ====== */
+/* ====== 선택지 사전 (기존 로직) ====== */
 const SEED_BY_POS = {
   IF: ["[내야 땅볼]", "[내야 뜬공]", "[내야 필드플레이]"],
   OF: ["[외야 뜬공]", "[외야 필드플레이]"],
@@ -247,10 +256,10 @@ const FINAL_DICT = {
 };
 
 /* ====== 로컬스토리지 키 ====== */
-const LS = { state: 'eagles_def_v094_state', table: 'eagles_def_v094_table', lineup: 'eagles_def_v094_lineup' };
+const LS = { state: 'eagles_def_v095_state', table: 'eagles_def_v095_table', lineup: 'eagles_def_v095_lineup' };
 function saveAll(){
   try{
-    localStorage.setItem(LS.state, JSON.stringify({ currentStep, currentValues, logSeq, lineupApplied }));
+    localStorage.setItem(LS.state, JSON.stringify({ currentStep, currentValues, logSeq, lineupApplied, scheduleName }));
     localStorage.setItem(LS.table, JSON.stringify(serializeTable()));
     localStorage.setItem(LS.lineup, JSON.stringify({ lineupMap, benchPosMap, starterKeys, benchKeys }));
   }catch(e){ console.warn('저장 실패', e); }
@@ -258,7 +267,15 @@ function saveAll(){
 function loadAll(){
   try{
     const s = JSON.parse(localStorage.getItem(LS.state)||'null');
-    if(s){ currentStep = s.currentStep||0; currentValues = s.currentValues||Array(steps.length).fill(""); logSeq = s.logSeq||0; lineupApplied = !!s.lineupApplied; }
+    if(s){
+      currentStep = s.currentStep||0;
+      currentValues = s.currentValues||Array(steps.length).fill("");
+      logSeq = s.logSeq||0;
+      lineupApplied = !!s.lineupApplied;
+      scheduleName = s.scheduleName||'';
+      const inp = document.getElementById('scheduleName'); if(inp) inp.value = scheduleName;
+      updateSchedulePreview();
+    }
     const rows = JSON.parse(localStorage.getItem(LS.table)||'null');
     if(Array.isArray(rows)) renderTableFrom(rows);
     const l = JSON.parse(localStorage.getItem(LS.lineup)||'null');
@@ -280,6 +297,10 @@ function loadAll(){
 function clearAll(){ localStorage.removeItem(LS.state); localStorage.removeItem(LS.table); localStorage.removeItem(LS.lineup); }
 
 /* ====== UI 렌더 ====== */
+function updateSchedulePreview(){
+  const el = document.getElementById('schedulePreview');
+  if(el) el.textContent = `일정명: ${scheduleName || '-'}`;
+}
 function updateStepProgress(){
   const el = document.getElementById('stepProgress'); el.innerHTML='';
   steps.forEach((s,i)=>{ const d=document.createElement('div'); d.className='stepBox'+(i===currentStep?' active':''); d.textContent=s.name; el.appendChild(d); });
@@ -305,7 +326,6 @@ function renderAll(){ updateStepProgress(); updateLegend(); updateCurrentLine();
 /* ====== 라인업 입력 UI ====== */
 (function setupLineupUI(){
   const starterDiv = document.getElementById('starterInputs');
-  // 선발: 포지션 고정 라벨 + 이름 입력
   starterKeys.forEach((k, idx)=>{
     const pos = STARTER_POS_LABEL[k];
     const row = document.createElement('div'); row.className='row';
@@ -328,16 +348,32 @@ function renderAll(){ updateStepProgress(); updateLegend(); updateCurrentLine();
 
   document.getElementById('applyLineupBtn').addEventListener('click', applyLineup);
   document.getElementById('clearLineupBtn').addEventListener('click', clearLineupInputs);
+
+  // 일정명 입력 동기화
+  const sch = document.getElementById('scheduleName');
+  if (sch){
+    sch.addEventListener('input', ()=>{
+      scheduleName = sch.value.trim();
+      updateSchedulePreview();
+      saveAll();
+    });
+  }
 })();
 
 function clearLineupInputs(){
+  const sch=document.getElementById('scheduleName'); if(sch) sch.value='', scheduleName='';
   for(let i=0;i<9;i++){ const el=document.getElementById(`starter${i}`); if(el) el.value=''; }
   for(let i=0;i<5;i++){
     const el=document.getElementById(`bench${i}`); if(el) el.value='';
     const sl=document.getElementById(`benchPos${i}`); if(sl) sl.value='';
   }
+  updateSchedulePreview();
 }
 function applyLineup(){
+  const sch=document.getElementById('scheduleName');
+  scheduleName = (sch && sch.value.trim()) || '';
+  updateSchedulePreview();
+
   lineupMap={}; benchPosMap={};
   for(let i=0;i<9;i++){
     const v=document.getElementById(`starter${i}`).value;
@@ -345,7 +381,7 @@ function applyLineup(){
   }
   for(let i=0;i<5;i++){
     const name=document.getElementById(`bench${i}`).value;
-    const pos =document.getElementById(`benchPos${i}`).value; // "[포수]" 등 또는 ""
+    const pos =document.getElementById(`benchPos${i}`).value;
     if(name) lineupMap[benchKeys[i]] = name;
     if(pos) benchPosMap[benchKeys[i]] = pos;
   }
@@ -360,13 +396,13 @@ function buildPlayerStepOptions(){
   const players=[];
   starterKeys.forEach(k=>{ if(lineupMap[k]) players.push({ key:k, label: `${lineupMap[k]}` }); });
   benchKeys.forEach(k=>{ if(lineupMap[k]) players.push({ key:k, label: `${lineupMap[k]}` }); });
-  steps[2].options = players.length? players : [{key:'₩', label:'수동 입력'}];
+  // ₩ 수동입력 제거: 라인업 없으면 비워둠
+  steps[2].options = players;
 }
 function renderLineupSummary(){
   const starterList = document.getElementById('starterList');
   const benchList   = document.getElementById('benchList');
-  starterList.innerHTML='';
-  benchList.innerHTML='';
+  starterList.innerHTML=''; benchList.innerHTML='';
 
   starterKeys.forEach(k=>{
     const name = lineupMap[k] || '';
@@ -406,11 +442,7 @@ function posToGroup(pos){
 }
 function resolveSeedOptions(){
   const grp = posToGroup(at(3));
-  setStepOptions(4, POS_OPTIONS); // 포지션 선택지는 항상 고정
-  setStepOptions(4, POS_OPTIONS);
-  setStepOptions(4, POS_OPTIONS);
-  setStepOptions(4, POS_OPTIONS);
-  // 5단계용
+  setStepOptions(4, POS_OPTIONS); // 포지션 고정
   const m = (SEED_BY_POS[grp] || []);
   steps[4].options = m.map(x=>x);
 }
@@ -534,19 +566,18 @@ document.addEventListener('keydown', (e)=>{
   if(e.key==='Backspace'){ if(currentStep>0){ currentStep--; currentValues[currentStep]=''; cascadeOptions(); saveAll(); renderAll(); } e.preventDefault(); return; }
 
   const opts = steps[currentStep].options || [];
-  const special = (e.key==='`'||e.key==='\\') ? '₩' : e.key;
 
-  // 선수 선택(라인업): step 2
+  // 선수 선택(라인업): step 2 — ₩ 수동입력 제거
   if(currentStep===2){
     if(!lineupApplied){ alert('먼저 라인업을 적용하세요.'); return; }
     const k = normalizePlayerKey(e.key);
-    if(lineupMap[k]){ currentValues[2] = `${lineupMap[k]}`; stepAdvance(); return; }
-    if(special==='₩'){ const name = prompt('선수명 입력'); if(name){ currentValues[2] = `${name}`; stepAdvance(); } return; }
+    if(lineupMap[k]){ currentValues[2] = `${lineupMap[k]}`; stepAdvance(); }
+    return;
   }
 
   // 개별 키 매칭(객체 우선)
   let matched = null;
-  for(const o of opts){ if(typeof o==='object' && o.key===special){ matched=o; break; } }
+  for(const o of opts){ if(typeof o==='object' && o.key===e.key){ matched=o; break; } }
   if(matched){ currentValues[currentStep] = matched.label; stepAdvance(); return; }
 
   // 숫자키 1~9
@@ -559,18 +590,12 @@ document.addEventListener('keydown', (e)=>{
 
 /* ====== 단계 전진 + 즉시 기록 처리 ====== */
 function stepAdvance(){
-  // 병살 2아웃 → 즉시 기록
   if (currentStep === 7) {
     const seed = at(4), char = at(5), res = at(6);
     if (seed==='[내야 땅볼]' && char==='[병살타성]' && res==='[처리 성공(2아웃)]') {
-      cascadeOptions();
-      currentStep = 8;
-      writeRowAndReset();
-      return;
+      cascadeOptions(); currentStep = 8; writeRowAndReset(); return;
     }
   }
-
-  // 포수/1루수 즉시 기록 케이스
   if (currentStep === 6 && posToGroup(at(3))==='C' && at(4)==='[포수 필드플레이]' && at(6) !== '[낫아웃 플레이 관련]') {
     currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
   }
@@ -583,7 +608,6 @@ function stepAdvance(){
   if (currentStep === 6 && posToGroup(at(3))==='_1B' && (at(4)==='[1루수 땅볼]' || at(4)==='[1루수 뜬공]')) {
     currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
   }
-
   if (currentStep === 8) { writeRowAndReset(); return; }
 
   if (currentStep === 3 || currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) { cascadeOptions(); }
@@ -593,7 +617,6 @@ function stepAdvance(){
 }
 
 /* ====== 코드→점수 매핑 / 코드룰 / 기록(자연어) 생성 ====== */
-/* ---- (여기는 네가 v0.9.3에서 쓰던 그대로: 변경 없음) ---- */
 const CODE_POINTS = {
   'G-S-C':1,'G-S-H':2,'G-S-O':0.5,'G-E-O':0,'G-E-F1':-0.5,'G-E-W':-0.5,'G-E-J':-1,'G-E-F2':-1,'G-E-H':0,'CG-S':1,'CG-S-H':2, 'CG-E':-1, 'CG-E-H':0, 'CF-S':1, 'CF-E':-1, 'CF-S-H':2, 'CF-E-H':0,
   'GD-S2':2,'GD-S1-TS':1,'GD-S1-PS':1,'GD-S1-TE':-1,'GD-S1-PE':-1,'GD-E-TS':2,'GD-E-PS':0,'GD-E-TE':-2,'GD-E-PE':-2,
@@ -606,7 +629,6 @@ const CODE_POINTS = {
 };
 function getDefenseScore(code){ return (code && code in CODE_POINTS) ? CODE_POINTS[code] : '-'; }
 
-/* (getDefenseCode / buildNaturalRecord는 v0.9.3과 동일 — 생략 없이 그대로 붙여넣기) */
 function getDefenseCode(vals){
   const [inn, order, player, pos, seed, char, res, err, fin] = vals;
   const isIF = (pos==='[투수]'||pos==='[2루수]'||pos==='[3루수]'||pos==='[유격수]');
@@ -703,60 +725,43 @@ function getDefenseCode(vals){
   return null;
 }
 
-// 대괄호 제거: 문자열의 [ 와 ] 전부 제거
+// 대괄호 제거
 function stripBr(s){ return (s || '').replace(/[\[\]]/g, ''); }
-
 function nicePos(pos){ return stripBr(pos); }
-
-// 시드에서 접두사(내야/외야/포수/1루수) 제거 → "땅볼", "뜬공", "필드플레이"만 남김
 function niceSeed(seed){
   const s = stripBr(seed);
   return s.replace(/^(내야|외야|포수|1루수)\s*/, '');
 }
-
 function buildNaturalRecord(vals){
   const [ , , , pos, seed, char, res, err, fin] = vals;
-
-  // 정규화
-  const P  = nicePos(pos);       // 예: "유격수"
-  const S  = niceSeed(seed);     // 예: "땅볼" / "뜬공" / "필드플레이"
-  const ch = stripBr(char);      // 예: "안타성" / "범타성" / "-" ...
-  const r  = stripBr(res);       // 예: "처리 성공" / "실책" / "필드 플레이 중 어시스트" ...
-  const e  = stripBr(err);       // 예: "포구 실책" / "송구 실책" / "판단 실책" / "-"
-  const f  = stripBr(fin);       // 예: "클린 송구로 처리" / "처리 성공" / ...
+  const P  = nicePos(pos);
+  const S  = niceSeed(seed);
+  const ch = stripBr(char);
+  const r  = stripBr(res);
+  const e  = stripBr(err);
+  const f  = stripBr(fin);
 
   const isIF = (P==='투수' || P==='2루수' || P==='3루수' || P==='유격수');
   const isC  = (P==='포수');
   const is1B = (P==='1루수');
   const isOF = (P==='좌익수' || P==='중견수' || P==='우익수');
 
-  // === A) 병살타성 (내야 땅볼)
   if (isIF && S==='땅볼' && ch==='병살타성'){
     if (r==='처리 성공(2아웃)') return `${P} ${S} 병살 2아웃`;
-
     const roleTxt = (e==='토스맨') ? '토스맨' : (e==='피벗맨') ? '피벗맨' : '';
     const moveTxt = (f==='토스맨 무브 클린' || f==='피벗맨 무브 클린') ? '클린'
                  : (f==='토스맨 무브 에러' || f==='피벗맨 무브 에러') ? '에러' : '';
-
-    if (r==='처리 성공(1아웃)'){
-      return `${P} ${S} 병살 1아웃` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
-    }
-    if (r==='처리 실패(0아웃)'){
-      return `${P} ${S} 병살 실패 (0아웃)` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
-    }
+    if (r==='처리 성공(1아웃)') return `${P} ${S} 병살 1아웃` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
+    if (r==='처리 실패(0아웃)') return `${P} ${S} 병살 실패 (0아웃)` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
   }
 
-  // === B) 필드플레이 (포수/1루수 즉시형 + 내외야 FP)
   if (S==='필드플레이'){
-    // (1) 포수 낫아웃 상세: FINAL 사용
     if (isC && r==='낫아웃 플레이 관련'){
       if (f==='폭투 낫아웃 플레이 성공') return `포수 낫아웃 성공 (폭투)`;
       if (f==='포일 낫아웃 플레이 성공') return `포수 낫아웃 성공 (포일)`;
       if (f==='폭투 낫아웃 플레이 실책') return `포수 낫아웃 실책 (폭투)`;
       if (f==='포일 낫아웃 플레이 실책') return `포수 낫아웃 실책 (포일)`;
     }
-
-    // (2) 공통 FP 라벨 매핑 (RES 또는 FINAL 둘 다 커버)
     const fpMap = {
       '필드 플레이 중 어시스트': '어시스트',
       '필드 플레이 중 풋아웃': '풋아웃',
@@ -770,30 +775,21 @@ function buildNaturalRecord(vals){
       '포일로 진루 허용': '포일 허용',
       '1루수 스쿱 캐치(원바운드 캐치)': '스쿱캐치'
     };
-
     const word = fpMap[r] || fpMap[f] || '';
     if (word) return `${P} ${S} ${word}`;
   }
 
-  // === C) 뜬공 (내/외야/포수/1루수 공통)
   if (S==='뜬공'){
     const base = `${P} ${S}`;
-    if (r==='처리 성공' || f==='처리 성공'){
-      return base + (ch==='안타성' ? ' 처리 (안타성)' : ' 처리');
-    }
-    if (r==='실책' || f==='실책'){
-      return base + (ch==='안타성' ? ' 실책 (안타성)' : ' 실책');
-    }
+    if (r==='처리 성공' || f==='처리 성공') return base + (ch==='안타성' ? ' 처리 (안타성)' : ' 처리');
+    if (r==='실책' || f==='실책')         return base + (ch==='안타성' ? ' 실책 (안타성)' : ' 실책');
   }
 
-  // === D) 땅볼 (내야/포수/1루수)
   if (S==='땅볼'){
-    // 안타성
     if (ch==='안타성'){
       if (r==='처리 성공') return `${P} ${S} 처리 (안타성)`;
       if (r==='실책')     return `${P} ${S} 실책 (안타성)`;
     }
-    // 범타성: 성공·실책 세부
     if (r==='처리 성공'){
       if (f==='클린 송구로 처리')      return `${P} ${S} 처리 (클린)`;
       if (f==='오프라인 송구로 처리')  return `${P} ${S} 처리 (오프라인)`;
@@ -814,15 +810,13 @@ function buildNaturalRecord(vals){
     }
   }
 
-  // 기본 폴백
   const bits = [P, S].filter(Boolean).join(' ');
   if (!bits) return '-';
   if (ch==='안타성') return `${bits} (안타성)`;
   return bits;
 }
 
-
-/* ====== 기록 ====== */
+/* ====== 기록 쓰기 ====== */
 function writeRowAndReset(){
   if ((at(4) === '[내야 뜬공]' || at(4) === '[외야 뜬공]') && (!at(6) || at(6) === '-')) {
     if (at(8) === '[처리 성공]') currentValues[6] = '[처리 성공]';
@@ -878,12 +872,34 @@ function renderTableFrom(rows){
 }
 function csvEscape(v){ const s=(v??'').toString(); return '"'+s.replace(/"/g,'""')+'"'; }
 function downloadCSV(){
-  const thead=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent); thead.shift();
-  const rows=[[...thead].map(csvEscape).join(',')];
+  // 헤더 구성: 화면은 '#'이지만 CSV에서는 '성과객체명'으로, 마지막에 '일정명' 추가
+  const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
+  screenHeads.shift(); // 첫 번째 체크박스 제거
+
+  const csvHeads = [...screenHeads];
+  if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
+  csvHeads.push('일정명');
+
+  const rows=[csvHeads.map(csvEscape).join(',')];
+
   const trs=[...document.querySelectorAll('#logTable tbody tr')];
-  trs.forEach(tr=>{ const tds=[...tr.cells].slice(1).map(td=>csvEscape(td.textContent)); rows.push(tds.join(',')); });
+  trs.forEach(tr=>{
+    const tds=[...tr.cells].slice(1).map(td=>td.textContent); // 화면 기준: #부터 끝까지
+    // tds[0] = 화면상의 # (순번)
+    const seq = tds[0] || '';
+    const prefixedSeq = (scheduleName ? (scheduleName + ' ' + seq) : seq);
+
+    // 값 치환: 첫 칼럼(#)을 성과객체명으로 대체
+    tds[0] = prefixedSeq;
+
+    // 마지막에 일정명 칼럼 추가
+    tds.push(scheduleName || '');
+
+    rows.push(tds.map(csvEscape).join(','));
+  });
+
   const blob=new Blob(["\uFEFF"+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eagles-defense-v094.csv'; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eagles-defense-v095.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
 function deleteSelected(){ const tbody=document.querySelector('#logTable tbody'); [...tbody.querySelectorAll('input.rowSel:checked')].forEach(cb=>cb.closest('tr').remove()); saveAll(); }
 
@@ -897,7 +913,7 @@ function deleteSelected(){ const tbody=document.querySelector('#logTable tbody')
     if(!confirm('정말 전체 초기화할까요? (진행상태/라인업/로그/저장데이터 삭제)')) return;
     document.querySelector('#logTable tbody').innerHTML='';
     logSeq=0; currentStep=0; currentValues=Array(steps.length).fill('');
-    lineupMap={}; benchPosMap={}; lineupApplied=false;
+    lineupMap={}; benchPosMap={}; lineupApplied=false; scheduleName='';
     document.getElementById('lineupInput').style.display='block';
     document.getElementById('lineupSummary').style.display='none';
     clearLineupInputs(); clearAll(); cascadeOptions(); renderAll();
