@@ -7,12 +7,11 @@
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; margin: 28px; }
     h1 { margin-bottom: 8px; }
     .sub { color:#667085; font-size:.9em }
-
-#topBar{
-  display:flex;
-  justify-content:center;   /* 묶음을 가운데에 */
-  align-items:center;
-  margin-bottom:12px;
+#topBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start; /* 왼쪽 정렬 */
 }
 #titleWrap{
   display:flex;
@@ -104,13 +103,11 @@
 </head>
 <body>
   
-  <div id="topBar">
-  <div id="titleWrap">
-    <img id="brandLogo" src="EG LOGO.png" alt="이글스 로고">
-    <h1>이글스 수비 성과평가 <span class="sub">– 시스템 v1.0.0</span></h1>
-  </div>
+<div id="topBar" style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+  <img src="EG LOGO.png" alt="이글스 로고" style="width:50px;height:50px;">
+  <h1 style="margin:0;">이글스 수비 성과평가 <span class="sub">– 시스템 v1.0.0</span></h1>
 </div>
-  
+
   <!-- 라인업 입력 (선수명 단계용) -->
   <div class="lineup-input" id="lineupInput">
     <div class="row" style="margin-bottom:8px;">
