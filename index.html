@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>이글스 수비 성과평가 – 단축키 입력 시스템 v0.9.6</title>
+  <title>이글스 수비 성과평가 시스템 v1.0.0</title>
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; margin: 28px; }
     h1 { margin-bottom: 8px; }
@@ -50,26 +50,32 @@
     .badge{ display:inline-block; padding:2px 6px; border-radius:999px; font-size:12px; background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3 }
     .posTag{ width:56px; display:inline-block; color:#111827; font-weight:700 }
     .hint{ color:#6b7280; font-size:12px }
-/* 라인업 입력(최초 화면) 2열 레이아웃 */
-.li-grid{ display:flex; gap:28px; align-items:flex-start; }
-.li-col{ flex:1 1 0; min-width:340px; }
-.li-col .li-head{ margin:8px 0 6px; }
-.li-bench{ flex:0 0 320px; }             /* 오른쪽(대기) 칼럼 고정폭 */
 
-@media (max-width: 980px){
-  .li-grid{ flex-direction:column; }     /* 화면 좁아지면 세로로 접기 */
-  .li-bench{ flex:1 1 auto; }
-}
+    /* 라인업 입력(최초 화면) 2열 레이아웃 */
+    .li-grid{ display:flex; gap:28px; align-items:flex-start; }
+    .li-col{ flex:1 1 0; min-width:340px; }
+    .li-col .li-head{ margin:8px 0 6px; }
+    .li-bench{ flex:0 0 320px; }             /* 오른쪽(대기) 칼럼 고정폭 */
 
-/* 입력줄 내부 정렬(라벨-인풋-셀렉트) */
-.lineup-input .row input{ flex:1; }
-.lineup-input .row select{ flex:0 0 140px; }  /* 대기 기본 포지션 셀렉트 폭 */
+    @media (max-width: 980px){
+      .li-grid{ flex-direction:column; }     /* 화면 좁아지면 세로로 접기 */
+      .li-bench{ flex:1 1 auto; }
+    }
 
+    /* 입력줄 내부 정렬(라벨-인풋-셀렉트) */
+    .lineup-input .row input{ flex:1; }
+    .lineup-input .row select{ flex:0 0 140px; }  /* 대기 기본 포지션 셀렉트 폭 */
+
+    /* 보정점수 박스 */
+    #adjScoreBox{ margin-top:10px; padding-top:8px; border-top:1px dashed #e5e7eb; }
+    #adjScoreBody table{ width:100%; border-collapse:collapse; }
+    #adjScoreBody td{ padding:4px 6px; font-size:12px; }
+    #adjScoreBody td:last-child{ text-align:right; font-weight:700; }
   </style>
 </head>
 <body>
   <div id="topBar">
-    <h1>이글스 수비 성과평가 <span class="sub">– 단축키 입력 시스템 v0.9.6</span></h1>
+    <h1>이글스 수비 성과평가 <span class="sub">– 시스템 v1.0.0</span></h1>
   </div>
 
   <!-- 라인업 입력 (선수명 단계용) -->
@@ -78,26 +84,26 @@
       <strong style="min-width:64px;">일정명</strong>
       <input id="scheduleName" placeholder="예: ’25 호크스 리그경기 1" style="flex:1;">
     </div>
-<!-- 선발·대기 2열 그리드 -->
-<div id="lineupInputGrid" class="li-grid">
-  <!-- 왼쪽: 선발 -->
-  <div class="li-col">
-    <div class="li-head">
-      <strong>선발 (수비 포지션 기준 1~9):</strong>
-      <span class="hint">1 투 · 2 포 · 3 1루 · 4 2루 · 5 3루 · 6 유격 · 7 좌익 · 8 중견 · 9 우익</span>
-    </div>
-    <div id="starterInputs"></div>
-  </div>
+    <!-- 선발·대기 2열 그리드 -->
+    <div id="lineupInputGrid" class="li-grid">
+      <!-- 왼쪽: 선발 -->
+      <div class="li-col">
+        <div class="li-head">
+          <strong>선발 (수비 포지션 기준 1~9):</strong>
+          <span class="hint">1 투 · 2 포 · 3 1루 · 4 2루 · 5 3루 · 6 유격 · 7 좌익 · 8 중견 · 9 우익</span>
+        </div>
+        <div id="starterInputs"></div>
+      </div>
 
-  <!-- 오른쪽: 대기 -->
-  <div class="li-col li-bench">
-    <div class="li-head">
-      <strong>대기 (q~t):</strong>
-      <span class="hint">이름 + 기본 포지션 선택(선택사항)</span>
+      <!-- 오른쪽: 대기 -->
+      <div class="li-col li-bench">
+        <div class="li-head">
+          <strong>대기 (q~t):</strong>
+          <span class="hint">이름 + 기본 포지션 선택(선택사항)</span>
+        </div>
+        <div id="benchInputs"></div>
+      </div>
     </div>
-    <div id="benchInputs"></div>
-  </div>
-</div>
 
     <div class="actions" style="margin-top:8px;">
       <button class="btn" id="applyLineupBtn">라인업 적용</button>
@@ -111,31 +117,37 @@
       <ul id="legendList"></ul>
     </div>
 
-<div id="lineupSummary" style="flex:0 0 360px;">
-  <!-- 라인업 헤더: 제목 왼쪽 / 최근 이닝 오른쪽 -->
-  <div class="lineupHeader" style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
-    <h3 style="margin:0;">라인업</h3>
-    <div id="recentWrap" aria-label="최근 이닝" style="display:flex;align-items:center;gap:6px;">
-      <span class="hint" style="margin:0;">최근 이닝:</span>
-      <span id="recentInning" class="badge" style="padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">-</span>
+    <div id="lineupSummary" style="flex:0 0 360px;">
+      <!-- 라인업 헤더: 제목 왼쪽 / 최근 이닝 오른쪽 -->
+      <div class="lineupHeader" style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
+        <h3 style="margin:0;">라인업</h3>
+        <div id="recentWrap" aria-label="최근 이닝" style="display:flex;align-items:center;gap:6px;">
+          <span class="hint" style="margin:0;">최근 이닝:</span>
+          <span id="recentInning" class="badge" style="padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">-</span>
+        </div>
+      </div>
+
+      <!-- ✅ 라인업 박스 내부 -->
+      <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
+
+      <div id="lineupWrapper">
+        <div class="lineupPanel">
+          <h4>선발 (1~9)</h4>
+          <div id="starterList"></div>
+        </div>
+        <div class="lineupPanel">
+          <h4>교체 (q~t)</h4>
+          <div id="benchList"></div>
+
+          <!-- ⬇️ 교체 명단 아래: 보정점수 -->
+          <div id="adjScoreBox">
+            <h4>보정점수</h4>
+            <div id="adjScoreBody" class="hint">로그를 입력하면 자동 계산됩니다.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- ✅ 이제 둘 다 라인업 박스 내부 -->
-  <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
-
-  <div id="lineupWrapper">
-    <div class="lineupPanel">
-      <h4>선발 (1~9)</h4>
-      <div id="starterList"></div>
-    </div>
-    <div class="lineupPanel">
-      <h4>교체 (q~t)</h4>
-      <div id="benchList"></div>
-    </div>
-  </div>
-</div>
-</div>
 
   <div id="stepProgress"></div>
   <div id="currentInputLine">[현재 입력 중] → </div>
@@ -175,7 +187,7 @@
   </div>
 
 <script>
-/* ===================== 수비 로직 사양 (v0.9.6) =====================
+/* ===================== 수비 로직 사양 (v1.0.0) =====================
 - 라인업 입력: 선발 1~9는 수비 포지션에 고정 매핑(1투,2포,3일,4이,5삼,6유,7좌,8중,9우)
 - 일정명 입력: CSV 추출 시 (# 헤더 → 성과객체명, 값 = "일정명 + 공백 + #", 마지막 컬럼으로 '일정명' 추가)
 - 포수 필드플레이 특수흐름:
@@ -321,8 +333,8 @@ const FINAL_DICT = {
   ]
 };
 
-/* ====== 로컬스토리지 키 ====== */
-const LS = { state: 'eagles_def_v096_state', table: 'eagles_def_v096_table', lineup: 'eagles_def_v096_lineup' };
+/* ====== 로컬스토리지 키 (v1.0.0으로 분리) ====== */
+const LS = { state: 'eagles_def_v100_state', table: 'eagles_def_v100_table', lineup: 'eagles_def_v100_lineup' };
 function saveAll(){
   try{
     localStorage.setItem(LS.state, JSON.stringify({ currentStep, currentValues, logSeq, lineupApplied, scheduleName }));
@@ -343,7 +355,7 @@ function loadAll(){
       updateSchedulePreview();
     }
     const rows = JSON.parse(localStorage.getItem(LS.table)||'null');
-    if(Array.isArray(rows)) { renderTableFrom(rows); updateRecentInningFromTable(); }
+    if(Array.isArray(rows)) { renderTableFrom(rows); updateRecentInningFromTable(); renderAdjustmentScores(); }
     const l = JSON.parse(localStorage.getItem(LS.lineup)||'null');
     if(l && l.lineupMap){
       lineupMap=l.lineupMap||{};
@@ -480,7 +492,7 @@ function renderLineupSummary(){
 
   benchKeys.forEach(k=>{
     const name = lineupMap[k] || '';
-    const pos  = benchPosMap[k] ? benchPosMap[k] : '';
+       const pos  = benchPosMap[k] ? benchPosMap[k] : '';
     const div = document.createElement('div');
     const posHtml = pos ? ` <span class="badge">${pos}</span>` : '';
     div.innerHTML = `<span class="key">${k}</span>${posHtml} ${name || '-'}`;
@@ -946,6 +958,7 @@ function writeRowAndReset(){
 
   currentStep = 0; currentValues = Array(steps.length).fill('');
   cascadeOptions(); renderAll(); saveAll();
+  renderAdjustmentScores();   // ⬅️ 새 보정점수 갱신
 }
 
 /* ====== 최근 이닝 표시 ====== */
@@ -985,6 +998,7 @@ function renderTableFrom(rows){
     tr.insertCell(-1).textContent=r.code||'-';
     tr.insertCell(-1).textContent=(r.score!==undefined?r.score:'-');
   });
+  renderAdjustmentScores(); // ⬅️ 복원 시 보정점수 갱신
 }
 
 // CSV용 이스케이프(쉼표/따옴표만 처리, 인젝션 방지 제거)
@@ -992,27 +1006,39 @@ function csvEscape(v){
   const s = (v ?? '').toString();
   return '"' + s.replace(/"/g, '""') + '"';
 }
-
 function sanitizeFilename(name){
   const s = (name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
   return s || 'Eagles Defense Log';
 }
 function downloadCSV(){
   const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
-  screenHeads.shift();
+  screenHeads.shift(); // 체크박스 헤더 제거
   const csvHeads = [...screenHeads];
   if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
   csvHeads.push('일정명');
   const rows=[csvHeads.map(csvEscape).join(',')];
 
-  const trs=[...document.querySelectorAll('#logTable tbody tr')];
+  const trs=[...document.querySelector('#logTable tbody').rows];
   trs.forEach(tr=>{
+    // 셀: seq~score 까지 (체크박스 제외)
     const tds=[...tr.cells].slice(1).map(td=>td.textContent);
     const seq = tds[0] || '';
     const prefixedSeq = (scheduleName ? (scheduleName + ' ' + seq) : seq);
     tds[0] = prefixedSeq;
-    tds.push(scheduleName || '');
-    rows.push(tds.map(csvEscape).join(','));
+
+    // CSV 라인 만들기 (점수는 숫자로 - 따옴표 없이)
+    const scoreIdx = tds.length - 1; // 마지막이 점수
+    const cells = tds.map((val, idx)=>{
+      if (idx === scoreIdx) {
+        const n = parseFloat(val);
+        return Number.isFinite(n) ? String(n) : csvEscape(val);
+      }
+      return csvEscape(val);
+    });
+
+    // 일정명 추가(문자열)
+    cells.push(csvEscape(scheduleName || ''));
+    rows.push(cells.join(','));
   });
 
   const blob=new Blob(["\uFEFF"+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
@@ -1027,6 +1053,7 @@ function deleteSelected(){
   [...tbody.querySelectorAll('input.rowSel:checked')].forEach(cb=>cb.closest('tr').remove());
   updateRecentInningFromTable();
   saveAll();
+  renderAdjustmentScores(); // ⬅️ 삭제 시 갱신
 }
 
 /* ====== 로그 수정모드 ====== */
@@ -1050,9 +1077,43 @@ function setEditMode(on){
       td.classList.toggle('ce', editMode);
     }
   }
-  if(!editMode){ saveAll(); updateRecentInningFromTable(); }
+  if(!editMode){ saveAll(); updateRecentInningFromTable(); renderAdjustmentScores(); } // ⬅️ 편집 종료 시 갱신
 }
 document.getElementById('toggleEdit').addEventListener('click', ()=> setEditMode(!editMode));
+
+/* ====== 보정점수 계산/렌더 ====== */
+function computeAdjustmentScores(){
+  const tb = document.querySelector('#logTable tbody');
+  const sums = { '2루수':0, '3루수':0, '유격수':0, '좌익수':0, '중견수':0, '우익수':0, '1루수':0, '포수':0 };
+  for(const tr of tb.rows){
+    const pos = (tr.cells[5]?.textContent||'').trim();
+    const val = (tr.cells[13]?.textContent||'').trim();
+    const sc  = parseFloat(val);
+    if (!Number.isFinite(sc)) continue;
+    if (pos in sums) sums[pos] += sc;
+  }
+  return {
+    infield:  (sums['2루수'] + sums['3루수'] + sums['유격수']) / 3,
+    outfield: (sums['좌익수'] + sums['중견수'] + sums['우익수']) / 3,
+    first:    sums['1루수'],
+    catcher:  sums['포수']
+  };
+}
+function renderAdjustmentScores(){
+  const s = computeAdjustmentScores();
+  const fmt = n => (Number.isFinite(n) ? n.toFixed(2) : '-');
+  const html = `
+    <table>
+      <tbody>
+        <tr><td style="text-align:left">내야 보정점수</td><td>${fmt(s.infield)}</td></tr>
+        <tr><td style="text-align:left">외야 보정점수</td><td>${fmt(s.outfield)}</td></tr>
+        <tr><td style="text-align:left">1루 보정점수</td><td>${fmt(s.first)}</td></tr>
+        <tr><td style="text-align:left">포수 보정점수</td><td>${fmt(s.catcher)}</td></tr>
+      </tbody>
+    </table>`;
+  const body = document.getElementById('adjScoreBody');
+  if (body) body.innerHTML = html;
+}
 
 /* ====== select-all & buttons ====== */
 (function(){
@@ -1069,6 +1130,7 @@ document.getElementById('toggleEdit').addEventListener('click', ()=> setEditMode
     document.getElementById('lineupSummary').style.display='none';
     clearLineupInputs(); clearAll(); cascadeOptions(); renderAll();
     updateRecentInningFromTable();
+    renderAdjustmentScores(); // ⬅️ 초기화 후 갱신
   });
 })();
 
@@ -1081,6 +1143,7 @@ window.addEventListener('load', ()=>{
   currentStep = autoSkipFrom(currentStep);
   renderAll();
   updateRecentInningFromTable();
+  renderAdjustmentScores(); // ⬅️ 초기 렌더
 });
 </script>
 </body>
