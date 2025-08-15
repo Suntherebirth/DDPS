@@ -986,13 +986,13 @@ function renderTableFrom(rows){
     tr.insertCell(-1).textContent=(r.score!==undefined?r.score:'-');
   });
 }
+
+// CSV용 이스케이프(쉼표/따옴표만 처리, 인젝션 방지 제거)
 function csvEscape(v){
-  // 수식 인젝션 방지: 앞공백 제거 후 = + - @ 로 시작하면 ' 접두
-  const needsQuote = /^[=\-+@]/.test((v??'').toString().trimStart());
-  const safe = needsQuote ? ("'"+(v??'')) : (v??'');
-  const s = safe.toString();
-  return '"'+s.replace(/"/g,'""')+'"';
+  const s = (v ?? '').toString();
+  return '"' + s.replace(/"/g, '""') + '"';
 }
+
 function sanitizeFilename(name){
   const s = (name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
   return s || 'Eagles Defense Log';
