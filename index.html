@@ -9,8 +9,10 @@
     .sub { color:#667085; font-size:.9em }
 
     #topBar{ display:flex; gap:14px; align-items:center; justify-content:space-between; }
+
+    /* 기존 파란 배지/래퍼는 더 이상 사용하지 않지만 남겨둠(호환용) */
     #recentWrap{ display:flex; align-items:center; gap:8px; }
-    #recentInning{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:#ecfeff; border:1px solid #a5f3fc; color:#0e7490; }
+    #recentInning{ /* 배지의 기본 스타일은 .inningTag가 담당 */ }
 
     #stepProgress { margin: 12px 0 16px; display:flex; flex-wrap:wrap; gap:8px }
     .stepBox { padding:6px 10px; border:1px solid #cfd8e3; border-radius:6px; background:#f3f6fb; font-weight:700; font-size:14px }
@@ -58,7 +60,7 @@
     .li-bench{ flex:0 0 320px; }             /* 오른쪽(대기) 칼럼 고정폭 */
 
     @media (max-width: 980px){
-      .li-grid{ flex-direction:column; }     /* 화면 좁아지면 세로로 접기 */
+      .li-grid{ flex-direction:column; }
       .li-bench{ flex:1 1 auto; }
     }
 
@@ -71,6 +73,18 @@
     #adjScoreBody table{ width:100%; border-collapse:collapse; }
     #adjScoreBody td{ padding:4px 6px; font-size:12px; }
     #adjScoreBody td:last-child{ text-align:right; font-weight:700; }
+
+    /* ① 최근 이닝: 전체를 초록 배지로 */
+    .inningTag {
+      margin-left:8px;
+      padding:2px 8px;
+      border-radius:9999px;
+      background:#22c55e; /* 진한 초록 배경 */
+      color:#ffffff;      /* 글씨는 흰색 */
+      font-size:12px;
+      font-weight:700;
+      border:1px solid #16a34a; /* 테두리는 어두운 초록 */
+    }
   </style>
 </head>
 <body>
@@ -118,13 +132,13 @@
     </div>
 
     <div id="lineupSummary" style="flex:0 0 360px;">
-      <!-- 라인업 헤더: 제목 왼쪽 / 최근 이닝 오른쪽 -->
+      <!-- 라인업 헤더: '라인업' 오른쪽에 초록 배지로 최근 이닝 표시 -->
       <div class="lineupHeader" style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
-        <h3 style="margin:0;">라인업</h3>
-        <div id="recentWrap" aria-label="최근 이닝" style="display:flex;align-items:center;gap:6px;">
-          <span class="hint" style="margin:0;">최근 이닝:</span>
-          <span id="recentInning" class="badge" style="padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">-</span>
-        </div>
+        <h3 style="margin:0; display:flex; align-items:center; gap:6px;">
+          라인업
+          <span id="recentInning" class="inningTag">최근 이닝 : -</span>
+        </h3>
+        <!-- (기존 recentWrap 제거) -->
       </div>
 
       <!-- ✅ 라인업 박스 내부 -->
@@ -154,15 +168,19 @@
   <div id="hint">ESC: 스텝 초기화 / Backspace: 한 단계 롤백 / 숫자키: 선택 / 선수선택: 1~9, q~t(한글자판 대응)</div>
 
   <div class="log">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
-      <h2 style="margin:0">입력 로그</h2>
-      <div class="actions">
+    <!-- ② '입력 로그' 오른쪽으로 토글 버튼 이동 -->
+    <div class="logHeader" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <h2 style="margin:0">입력 로그</h2>
         <button id="toggleEdit" class="btn">로그 수정: OFF</button>
+      </div>
+      <div class="actions">
         <button id="deleteSelected" class="btn">선택 삭제</button>
         <button id="exportCsv" class="btn">CSV 다운로드</button>
         <button id="resetAll" class="btn-danger">전체 초기화</button>
       </div>
     </div>
+
     <table id="logTable">
       <thead>
         <tr>
@@ -185,6 +203,13 @@
       <tbody></tbody>
     </table>
   </div>
+
+
+
+
+
+
+
 
 <script>
 /* ===================== 수비 로직 사양 (v1.0.0) =====================
@@ -961,15 +986,17 @@ function writeRowAndReset(){
   renderAdjustmentScores();   // ⬅️ 새 보정점수 갱신
 }
 
-/* ====== 최근 이닝 표시 ====== */
 function updateRecentInningFromTable(){
   const tbody = document.querySelector('#logTable tbody');
   const first = tbody.rows[0];
   const tgt = document.getElementById('recentInning');
-  if(!first){ tgt.textContent='-'; return; }
+  if(!first){ 
+    tgt.textContent = '최근 이닝 : -'; 
+    return; 
+  }
   const inningCell = first.cells[2]; // 이닝
   const val = inningCell ? inningCell.textContent : '';
-  tgt.textContent = stripBr(val) || '-';
+  tgt.textContent = val ? `최근 이닝 : ${stripBr(val)}` : '최근 이닝 : -';
 }
 
 /* ====== 표 직렬화/복구/CSV/삭제 ====== */
