@@ -1236,9 +1236,11 @@ function computeAdjustmentScores(){
     infield:  (sums['2루수'] + sums['3루수'] + sums['유격수']) / 3,
     outfield: (sums['좌익수'] + sums['중견수'] + sums['우익수']) / 3,
     first:    sums['1루수'],
-    catcher:  sums['포수']
+    catcher:  sums['포수'],
+    fcPair:   (sums['1루수'] + sums['포수']) / 2  // ⬅️ 1루+포수 합의 평균
   };
 }
+
 function renderAdjustmentScores(){
   const s = computeAdjustmentScores();
   const fmt = n => (Number.isFinite(n) ? n.toFixed(2) : '-');
@@ -1249,6 +1251,7 @@ function renderAdjustmentScores(){
         <tr><td style="text-align:left">외야 보정점수</td><td>${fmt(s.outfield)}</td></tr>
         <tr><td style="text-align:left">1루 보정점수</td><td>${fmt(s.first)}</td></tr>
         <tr><td style="text-align:left">포수 보정점수</td><td>${fmt(s.catcher)}</td></tr>
+        <tr><td style="text-align:left"><span class="badge">1/포 보정점수</span></td><td><strong>${fmt(s.fcPair)}</strong></td></tr>
       </tbody>
     </table>`;
   const body = document.getElementById('adjScoreBody');
