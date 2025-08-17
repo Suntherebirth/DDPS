@@ -1061,18 +1061,6 @@ function downloadCSV(){
   if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
   csvHeads.push('일정명');
   const rows=[csvHeads.map(csvEscape).join(',')];
-}
-// ... downloadCSV 정의 아래 등 적절한 위치에 추가
-function deleteSelected(){
-  const tbody = document.querySelector('#logTable tbody');
-  const checked = tbody ? tbody.querySelectorAll('input.rowSel:checked') : [];
-  if (!checked.length) return;
-
-  checked.forEach(cb => {
-    const tr = cb.closest('tr');
-    if (tr) tr.remove();
-  });
-}
   // 전체선택 체크 해제
   const selAll = document.getElementById('selectAll');
   if (selAll) selAll.checked = false;
@@ -1113,6 +1101,19 @@ function deleteSelected(){
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+
+// ... downloadCSV 정의 아래 등 적절한 위치에 추가
+function deleteSelected(){
+  const tbody = document.querySelector('#logTable tbody');
+  const checked = tbody ? tbody.querySelectorAll('input.rowSel:checked') : [];
+  if (!checked.length) return;
+
+  checked.forEach(cb => {
+    const tr = cb.closest('tr');
+    if (tr) tr.remove();
+  });
+
 
 /* ====== ⬇⬇⬇ 추가: CSV 복사 기능 (클립보드) ⬇⬇⬇ ====== */
 function tableToCSV_Defense(){
