@@ -1055,33 +1055,27 @@ function sanitizeFilename(name){
   return s || 'Eagles Defense Log';
 }
 function downloadCSV(){
-  const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
+  // 1) 헤더 만들기 (# → 성과객체명, 마지막에 일정명 추가)
+  const screenHeads = [...document.querySelectorAll('#logTable thead th')].map(th => th.textContent);
   screenHeads.shift(); // 체크박스 헤더 제거
   const csvHeads = [...screenHeads];
   if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
   csvHeads.push('일정명');
-  const rows=[csvHeads.map(csvEscape).join(',')];
-  // 전체선택 체크 해제
-  const selAll = document.getElementById('selectAll');
-  if (selAll) selAll.checked = false;
 
-  // 표시/저장값 갱신
-  updateRecentInningFromTable();
-  saveAll();
-  renderAdjustmentScores();
-}
+  const rows = [csvHeads.map(csvEscape).join(',')];
 
-  const trs=[...document.querySelector('#logTable tbody').rows];
-  trs.forEach(tr=>{
-    // 셀: seq~score 까지 (체크박스 제외)
-    const tds=[...tr.cells].slice(1).map(td=>td.textContent);
+  // 2) 바디 만들기
+  const trs = [...document.querySelector('#logTable tbody').rows];
+  trs.forEach(tr => {
+    // 체크박스 제외(= seq부터 점수까지)
+    const tds = [...tr.cells].slice(1).map(td => td.textContent.trim());
+    // 성과객체명: 일정명 + 공백 + seq
     const seq = tds[0] || '';
-    const prefixedSeq = (scheduleName ? (scheduleName + ' ' + seq) : seq);
-    tds[0] = prefixedSeq;
+    tds[0] = scheduleName ? `${scheduleName} ${seq}` : seq;
 
-    // CSV 라인 만들기 (점수는 숫자로 - 따옴표 없이)
-    const scoreIdx = tds.length - 1; // 마지막이 점수
-    const cells = tds.map((val, idx)=>{
+    // 점수(마지막 칸)는 숫자로 그대로, 나머지는 CSV 이스케이프
+    const scoreIdx = tds.length - 1;
+    const cells = tds.map((val, idx) => {
       if (idx === scoreIdx) {
         const n = parseFloat(val);
         return Number.isFinite(n) ? String(n) : csvEscape(val);
@@ -1089,31 +1083,53 @@ function downloadCSV(){
       return csvEscape(val);
     });
 
-    // 일정명 추가(문자열)
+    // 마지막에 일정명 컬럼 추가(문자열)
     cells.push(csvEscape(scheduleName || ''));
     rows.push(cells.join(','));
   });
 
-  const blob=new Blob(["\uFEFF"+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  // 3) 다운로드
+  const blob = new Blob(["\uFEFF" + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
   const fname = `Eagles Defense Log '${sanitizeFilename(scheduleName)}'.csv`;
   a.download = fname;
   a.click();
   URL.revokeObjectURL(a.href);
+
+  // (선택) UI 상태 약간 정리
+  const selAll = document.getElementById('selectAll');
+  if (selAll) selAll.checked = false;
+  updateRecentInningFromTable();
+  saveAll();
+  renderAdjustmentScores();
 }
 
-
-// ... downloadCSV 정의 아래 등 적절한 위치에 추가
 function deleteSelected(){
   const tbody = document.querySelector('#logTable tbody');
   const checked = tbody ? tbody.querySelectorAll('input.rowSel:checked') : [];
   if (!checked.length) return;
 
+  // 1) 체크된 행 삭제
   checked.forEach(cb => {
     const tr = cb.closest('tr');
     if (tr) tr.remove();
   });
 
+  // 2) 전체선택 해제
+  const selAll = document.getElementById('selectAll');
+  if (selAll) selAll.checked = false;
+
+  // 3) # 재번호 매기기 (맨 위 행부터 1,2,3…)
+  const rows = [...document.querySelectorAll('#logTable tbody tr')];
+  rows.forEach((tr, i) => { tr.cells[1].textContent = String(rows.length - i); }); 
+  // ↑ 최신 입력이 위로 쌓이므로 역번호. 만약 1,2,3 순서 원하면:  tr.cells[1].textContent = String(i+1);
+
+  // 4) 표시/저장 갱신
+  updateRecentInningFromTable();
+  saveAll();
+  renderAdjustmentScores();
+}
 
 /* ====== ⬇⬇⬇ 추가: CSV 복사 기능 (클립보드) ⬇⬇⬇ ====== */
 function tableToCSV_Defense(){
