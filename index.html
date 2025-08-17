@@ -1061,7 +1061,7 @@ function downloadCSV(){
   if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
   csvHeads.push('일정명');
   const rows=[csvHeads.map(csvEscape).join(',')];
-
+}
 // ... downloadCSV 정의 아래 등 적절한 위치에 추가
 function deleteSelected(){
   const tbody = document.querySelector('#logTable tbody');
