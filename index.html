@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>이글스 수비 성과평가 시스템 v1.0.0</title>
-  <link rel="apple-touch-icon" href="EG LOGO.png">
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; margin: 28px; }
     h1 { margin-bottom: 8px; }
@@ -184,49 +183,46 @@
   <div id="currentInputLine">[현재 입력 중] → </div>
   <div id="hint">ESC: 스텝 초기화 / Backspace: 한 단계 롤백 / 숫자키: 선택 / 선수선택: 1~9, q~t(한글자판 대응)</div>
 
-  <div class="log">
-    <!-- ② '입력 로그' 오른쪽으로 토글 버튼 이동 -->
-    <div class="logHeader" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <h2 style="margin:0">입력 로그</h2>
-        <button id="toggleEdit" class="btn">로그 수정: OFF</button>
-      </div>
-      <div class="actions">
-        <button id="deleteSelected" class="btn">선택 삭제</button>
-        <button id="exportCsv" class="btn">CSV 다운로드</button>
-        <button id="resetAll" class="btn-danger">전체 초기화</button>
-      </div>
+<div class="log">
+  <!-- 로그 헤더 -->
+  <div class="logHeader" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <h2 style="margin:0">입력 로그</h2>
+      <button id="toggleEdit" class="btn">로그 수정: OFF</button>
     </div>
 
-    <table id="logTable">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="selectAll"></th>
-          <th>#</th>
-          <th>이닝</th>
-          <th>타순</th>
-          <th>선수</th>
-          <th>포지션</th>
-          <th>타구종류</th>
-          <th>성격</th>
-          <th>처리</th>
-          <th>처리2</th>
-          <th>최종</th>
-          <th>기록</th>
-          <th>코드</th>
-          <th>점수</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- 우측 액션들 -->
+    <div class="actions">
+      <button id="deleteSelected" class="btn">선택 삭제</button>
+      <button id="exportCsv" class="btn">CSV 다운로드</button>
+      <button id="copyCsv" class="btn">CSV 복사</button>
+      <button id="resetAll" class="btn-danger">전체 초기화</button>
+    </div>
   </div>
 
-
-
-
-
-
-
+  <!-- 테이블 -->
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAll"></th>
+        <th>#</th>
+        <th>이닝</th>
+        <th>타순</th>
+        <th>선수</th>
+        <th>포지션</th>
+        <th>타구종류</th>
+        <th>성격</th>
+        <th>처리</th>
+        <th>처리2</th>
+        <th>최종</th>
+        <th>기록</th>
+        <th>코드</th>
+        <th>점수</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script>
 /* ===================== 수비 로직 사양 (v1.0.0) =====================
@@ -1092,13 +1088,71 @@ function downloadCSV(){
   a.click();
   URL.revokeObjectURL(a.href);
 }
-function deleteSelected(){
-  const tbody=document.querySelector('#logTable tbody');
-  [...tbody.querySelectorAll('input.rowSel:checked')].forEach(cb=>cb.closest('tr').remove());
-  updateRecentInningFromTable();
-  saveAll();
-  renderAdjustmentScores(); // ⬅️ 삭제 시 갱신
+
+/* ====== ⬇⬇⬇ 추가: CSV 복사 기능 (클립보드) ⬇⬇⬇ ====== */
+function tableToCSV_Defense(){
+  // 헤더 구성 (# → 성과객체명, 마지막에 일정명 추가)
+  const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
+  screenHeads.shift(); // 체크박스 제거
+  const csvHeads = [...screenHeads];
+  if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
+  csvHeads.push('일정명');
+  const lines=[csvHeads.map(csvEscape).join(',')];
+
+  // 바디
+  const trs=[...document.querySelector('#logTable tbody').rows];
+  trs.forEach(tr=>{
+    const tds=[...tr.cells].slice(1).map(td=>td.textContent.trim()); // 체크박스 제외
+    // 성과객체명: 일정명 + 공백 + seq
+    const seq = tds[0] || '';
+    tds[0] = scheduleName ? `${scheduleName} ${seq}` : seq;
+
+    // 점수는 숫자 그대로, 나머지는 csvEscape
+    const scoreIdx = tds.length - 1;
+    const cells = tds.map((val, idx)=>{
+      if (idx === scoreIdx) {
+        const n = parseFloat(val);
+        return Number.isFinite(n) ? String(n) : csvEscape(val);
+      }
+      return csvEscape(val);
+    });
+
+    // 마지막에 일정명 컬럼 추가
+    cells.push(csvEscape(scheduleName || ''));
+    lines.push(cells.join(','));
+  });
+
+  return lines.join('\n');
 }
+function fallbackCopyTextToClipboard(text){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function copyCSVToClipboard_Defense(){
+  const csv = tableToCSV_Defense();   // UTF-8 (BOM 없이)
+  const btn = document.getElementById('copyCsv');
+  const flash = (msg)=>{
+    if(!btn) return;
+    const orig=btn.textContent; btn.textContent=msg; btn.disabled=true;
+    setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; }, 1200);
+  };
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(csv)
+      .then(()=>flash('복사 완료!'))
+      .catch(()=> fallbackCopyTextToClipboard(csv) ? flash('복사 완료!') : flash('복사 실패'));
+  }else{
+    fallbackCopyTextToClipboard(csv) ? flash('복사 완료!') : flash('복사 실패');
+  }
+}
+/* ====== ⬆⬆⬆ 추가 끝 ====== */
 
 /* ====== 로그 수정모드 ====== */
 let editMode = false;
@@ -1165,6 +1219,12 @@ function renderAdjustmentScores(){
   selAll.addEventListener('change',()=>{ const boxes=[...document.querySelectorAll('#logTable tbody .rowSel')]; boxes.forEach(b=>b.checked=selAll.checked); });
   document.getElementById('deleteSelected').addEventListener('click', deleteSelected);
   document.getElementById('exportCsv').addEventListener('click', downloadCSV);
+
+  // ⬇⬇⬇ 추가: CSV 복사 버튼 연결
+  const copyBtn = document.getElementById('copyCsv');
+  if (copyBtn) copyBtn.addEventListener('click', copyCSVToClipboard_Defense);
+  // ⬆⬆⬆ 추가 끝
+
   document.getElementById('resetAll').addEventListener('click', ()=>{
     if(!confirm('정말 전체 초기화할까요? (진행상태/라인업/로그/저장데이터 삭제)')) return;
     document.querySelector('#logTable tbody').innerHTML='';
