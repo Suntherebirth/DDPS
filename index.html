@@ -2,122 +2,94 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>이글스 수비 성과평가 시스템 v1.0.0</title>
-    <link rel="apple-touch-icon" href="EG LOGO.png">
+  <title>이글스 수비 성과평가 – 시스템 v1.1.2</title>
+  <link rel="apple-touch-icon" href="EG LOGO.png">
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; margin: 28px; }
-    h1 { margin-bottom: 8px; }
-    .sub { color:#667085; font-size:.9em }
-#topBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-start; /* 왼쪽 정렬 */
-}
-#titleWrap{
-  display:flex;
-  align-items:center;
-  gap:10px;                 /* 로고-제목 간격 */
-}
-#brandLogo{
-  width:50px; height:50px;
-  object-fit:cover;
-  border-radius:8px;        /* 원형 원하면 50% */
-}
+    body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,sans-serif;margin:28px}
+    h1{margin-bottom:8px}.sub{color:#667085;font-size:.9em}
 
-    /* 기존 파란 배지/래퍼는 더 이상 사용하지 않지만 남겨둠(호환용) */
-    #recentWrap{ display:flex; align-items:center; gap:8px; }
-    #recentInning{ /* 배지의 기본 스타일은 .inningTag가 담당 */ }
+    /* 상단 */
+    #topBar{display:flex;align-items:center;gap:8px;justify-content:flex-start}
+    #brandLogo{width:50px;height:50px;object-fit:cover;border-radius:8px}
 
-    #stepProgress { margin: 12px 0 16px; display:flex; flex-wrap:wrap; gap:8px }
-    .stepBox { padding:6px 10px; border:1px solid #cfd8e3; border-radius:6px; background:#f3f6fb; font-weight:700; font-size:14px }
-    .stepBox.active { background:#2563eb; color:#fff; border-color:#2563eb }
-
-    #legendBox { margin: 10px 0 16px; padding: 10px 14px; background: #eef2ff; border:1px solid #c7d2fe; border-radius:6px }
-    #legendBox strong { display:block; margin-bottom:4px }
-    #legendList { list-style:none; margin:0; padding:0 }
-    #legendList li { margin:3px 0 }
-    .green{color:#16a34a;font-weight:700}
-    .red{color:#dc2626;font-weight:700}
-    .blue{color:#2563eb;font-weight:700}
-    .yellow{color:#C99700;font-weight:700}
-
-    #currentInputLine{ font-size:16px; margin:8px 0; font-weight:700 }
-    #hint{ font-size:12px; color:#6b7280; margin-bottom: 10px }
-
-    .log { margin-top: 18px; border-top:1px solid #e5e7eb; padding-top:12px }
-    table { width:100%; border-collapse:collapse; }
-    th, td { border:1px solid #e5e7eb; padding:6px 8px; text-align:center; font-size:13px }
-    th { background:#f8fafc }
-    .btn { background:#f3f4f6; border:1px solid #d1d5db; padding:6px 10px; cursor:pointer; border-radius:6px }
-    .btn-danger{ background:#ef4444; border-color:#ef4444; color:#fff }
-    .actions{ display:flex; gap:8px; margin:6px 0 }
-    .flash-bg{ background:#e0f2fe; transition: background 600ms ease }
-    .editing td.ce{ outline: 2px dashed #93c5fd; background:#eff6ff; }
-
-    .lineup-input { margin: 12px 0 10px; border:1px solid #e5e7eb; padding:10px; border-radius:6px; background:#f9fafb }
-    .lineup-input input, .lineup-input select { margin:2px }
-    .topRow { display:flex; align-items:flex-start; gap:14px }
-    #lineupSummary{ display:none; border:1px solid #e5e7eb; padding:10px; background:#fafafa }
-    #lineupWrapper{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
-    .lineupPanel{ border:1px dashed #e5e7eb; padding:8px }
-    .lineupPanel h4{ margin:0 0 6px; font-size:14px }
-    .key{ width:28px; display:inline-block; color:#888 }
-    .row{ display:flex; align-items:center; gap:8px; margin:4px 0 }
-    .badge{ display:inline-block; padding:2px 6px; border-radius:999px; font-size:12px; background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3 }
-    .posTag{ width:56px; display:inline-block; color:#111827; font-weight:700 }
-    .hint{ color:#6b7280; font-size:12px }
-
-    /* 라인업 입력(최초 화면) 2열 레이아웃 */
-    .li-grid{ display:flex; gap:28px; align-items:flex-start; }
-    .li-col{ flex:1 1 0; min-width:340px; }
-    .li-col .li-head{ margin:8px 0 6px; }
-    .li-bench{ flex:0 0 320px; }             /* 오른쪽(대기) 칼럼 고정폭 */
-
-    @media (max-width: 980px){
-      .li-grid{ flex-direction:column; }
-      .li-bench{ flex:1 1 auto; }
+    /* 메인 2열 */
+    .topRow{
+      display:grid; gap:16px;
+      grid-template-columns: 0.7fr 1.3fr;
+      align-items:start;
     }
 
-    /* 입력줄 내부 정렬(라벨-인풋-셀렉트) */
-    .lineup-input .row input{ flex:1; }
-    .lineup-input .row select{ flex:0 0 140px; }  /* 대기 기본 포지션 셀렉트 폭 */
+    /* 선택지 패널 */
+    #legendBox{margin:10px 0 16px;padding:10px 14px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px}
+    #legendBox strong{display:block;margin-bottom:4px}
+    #legendList{list-style:none;margin:0;padding:0}
+    #legendList li{margin:3px 0}
+    .green{color:#16a34a;font-weight:700}.red{color:#dc2626;font-weight:700}
+    .yellow{color:#C99700;font-weight:700}.blue{color:#2563eb;font-weight:700}
 
-    /* 보정점수 박스 */
-    #adjScoreBox{ margin-top:10px; padding-top:8px; border-top:1px dashed #e5e7eb; }
-    #adjScoreBody table{ width:100%; border-collapse:collapse; }
-    #adjScoreBody td{ padding:4px 6px; font-size:12px; }
-    #adjScoreBody td:last-child{ text-align:right; font-weight:700; }
+    #stepProgress{margin:12px 0 16px;display:flex;flex-wrap:wrap;gap:8px}
+    .stepBox{padding:6px 10px;border:1px solid #cfd8e3;border-radius:6px;background:#f3f6fb;font-weight:700;font-size:14px}
+    .stepBox.active{background:#2563eb;color:#fff;border-color:#2563eb}
+    #currentInputLine{font-size:16px;margin:8px 0;font-weight:700}
+    #hint{font-size:12px;color:#6b7280;margin-bottom:10px}
 
-    /* ① 최근 이닝: 전체를 초록 배지로 */
-    .inningTag {
-      margin-left:8px;
-      padding:2px 8px;
-      border-radius:9999px;
-      background:#22c55e; /* 진한 초록 배경 */
-      color:#ffffff;      /* 글씨는 흰색 */
-      font-size:12px;
-      font-weight:700;
-      border:1px solid #16a34a; /* 테두리는 어두운 초록 */
-    }
+    /* 라인업/보정 패널 */
+    #lineupSummary{display:none;border:1px solid #e5e7eb;padding:10px;background:#fafafa;border-radius:8px}
+    .lineupHeader{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+    .inningTag{margin-left:8px;padding:2px 8px;border-radius:9999px;background:#22c55e;color:#fff;font-size:12px;font-weight:700;border:1px solid #16a34a}
+    .hint{color:#6b7280;font-size:12px}
+
+    #lineupWrapper{display:grid; gap:12px; grid-template-columns: 1fr 0.9fr;}
+    .lineupCol{display:flex;flex-direction:column;gap:10px}
+    .lineupPanel{border:1px dashed #e5e7eb;padding:8px;border-radius:8px;background:#fff}
+    .lineupPanel h4{margin:0 0 6px;font-size:14px}
+    .row{display:flex;align-items:center;gap:8px;margin:4px 0}
+    .key{width:28px;display:inline-block;color:#888}
+    .badge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:12px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+    .scoreTag{margin-left:auto;font-weight:700;color:#111827}
+
+    /* 보정필요 배지 */
+    .badge-need{background:#fff7ed;border-color:#fdba74;color:#9a3412;font-weight:700}
+
+    /* 보정 패널 */
+    .adjPanel{border:1px dashed #e5e7eb;padding:8px;border-radius:8px;background:#fff}
+    .adjPanel h4{margin:0 0 6px;font-size:14px}
+    .adjTable, table{width:100%;border-collapse:collapse}
+    .adjTable td, .adjTable th, th, td{border:1px solid #e5e7eb;padding:6px 8px;text-align:center;font-size:12px}
+    th{background:#f8fafc}
+
+    /* 라인업 입력 */
+    .lineup-input{margin:12px 0 10px;border:1px solid #e5e7eb;padding:10px;border-radius:6px;background:#f9fafb}
+    .lineup-input input, .lineup-input select{margin:2px}
+    .li-grid{display:flex;gap:28px;align-items:flex-start}
+    .li-col{flex:1 1 0;min-width:340px}
+    .li-bench{flex:0 0 360px}
+    @media (max-width: 980px){ .topRow{grid-template-columns:1fr} #lineupWrapper{grid-template-columns:1fr} .li-grid{flex-direction:column} .li-bench{flex:1 1 auto} }
+
+    /* 로그 테이블 */
+    .log{margin-top:18px;border-top:1px solid #e5e7eb;padding-top:12px}
+    table{width:100%;border-collapse:collapse}
+    .btn{background:#f3f4f6;border:1px solid #d1d5db;padding:6px 10px;cursor:pointer;border-radius:6px}
+    .btn-danger{background:#ef4444;border-color:#ef4444;color:#fff}
+    .actions{display:flex;gap:8px;margin:6px 0}
+    .flash-bg{background:#e0f2fe;transition:background 600ms ease}
+    .editing td.ce{outline:2px dashed #93c5fd;background:#eff6ff}
   </style>
 </head>
 <body>
-  
-<div id="topBar" style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">
-  <img src="EG LOGO.png" alt="이글스 로고" style="width:50px;height:50px;">
-  <h1 style="margin:0;">이글스 수비 성과평가 <span class="sub">– 시스템 v1.0.0</span></h1>
-</div>
+  <div id="topBar">
+    <img id="brandLogo" src="EG LOGO.png" alt="이글스 로고">
+    <h1 style="margin:0;">이글스 수비 성과평가 <span class="sub">– 시스템 v1.1.2</span></h1>
+  </div>
 
-  <!-- 라인업 입력 (선수명 단계용) -->
+  <!-- 라인업 입력 -->
   <div class="lineup-input" id="lineupInput">
     <div class="row" style="margin-bottom:8px;">
       <strong style="min-width:64px;">일정명</strong>
       <input id="scheduleName" placeholder="예: ’25 호크스 리그경기 1" style="flex:1;">
     </div>
-    <!-- 선발·대기 2열 그리드 -->
     <div id="lineupInputGrid" class="li-grid">
-      <!-- 왼쪽: 선발 -->
+      <!-- 선발 -->
       <div class="li-col">
         <div class="li-head">
           <strong>선발 (수비 포지션 기준 1~9):</strong>
@@ -125,17 +97,15 @@
         </div>
         <div id="starterInputs"></div>
       </div>
-
-      <!-- 오른쪽: 대기 -->
+      <!-- 교체 -->
       <div class="li-col li-bench">
         <div class="li-head">
-          <strong>대기 (q~t):</strong>
-          <span class="hint">이름 + 기본 포지션 선택(선택사항)</span>
+          <strong>교체 (q~t):</strong>
+          <span class="hint">이름 + 기본 포지션(선택) + 구분(필수)</span>
         </div>
         <div id="benchInputs"></div>
       </div>
     </div>
-
     <div class="actions" style="margin-top:8px;">
       <button class="btn" id="applyLineupBtn">라인업 적용</button>
       <button class="btn" id="clearLineupBtn">입력 비우기</button>
@@ -143,322 +113,191 @@
   </div>
 
   <div class="topRow">
-    <div id="legendBox" style="flex:1 1 auto;">
-      <strong>선택지 (단축키):</strong>
-      <ul id="legendList"></ul>
+    <!-- 좌: 선택지 패널 -->
+    <div>
+      <div id="legendBox">
+        <strong>선택지 (단축키):</strong>
+        <ul id="legendList"></ul>
+      </div>
+      <div id="stepProgress"></div>
+      <div id="currentInputLine">[현재 입력 중] → </div>
+      <div id="hint">ESC: 초기화 / Backspace: 롤백 / 숫자키: 선택 / 선수선택: 1~9, q~t(한글자판 대응)</div>
     </div>
 
-    <div id="lineupSummary" style="flex:0 0 360px;">
-      <!-- 라인업 헤더: '라인업' 오른쪽에 초록 배지로 최근 이닝 표시 -->
-      <div class="lineupHeader" style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;">
-        <h3 style="margin:0; display:flex; align-items:center; gap:6px;">
+    <!-- 우: 라인업/보정 패널 -->
+    <div id="lineupSummary">
+      <div class="lineupHeader">
+        <h3 style="margin:0;display:flex;align-items:center;gap:6px;">
           라인업
           <span id="recentInning" class="inningTag">최근 이닝 : -</span>
         </h3>
-        <!-- (기존 recentWrap 제거) -->
       </div>
-
-      <!-- ✅ 라인업 박스 내부 -->
       <div class="hint" id="schedulePreview" style="margin-bottom:6px;">일정명: -</div>
 
       <div id="lineupWrapper">
-        <div class="lineupPanel">
-          <h4>선발 (1~9)</h4>
-          <div id="starterList"></div>
+        <!-- 좌 컬럼: 선발 위 / 교체 아래 -->
+        <div class="lineupCol">
+          <div class="lineupPanel">
+            <h4>선발 (1~9)</h4>
+            <div id="starterList"></div>
+          </div>
+          <div class="lineupPanel">
+            <h4>교체 (q~t)</h4>
+            <div id="benchList"></div>
+          </div>
         </div>
-        <div class="lineupPanel">
-          <h4>교체 (q~t)</h4>
-          <div id="benchList"></div>
 
-          <!-- ⬇️ 교체 명단 아래: 보정점수 -->
-          <div id="adjScoreBox">
-            <h4>보정점수</h4>
-            <div id="adjScoreBody" class="hint">로그를 입력하면 자동 계산됩니다.</div>
+        <!-- 우 컬럼: 보정 관련 -->
+        <div class="adjCol">
+          <div class="adjPanel">
+            <h4>팀 보정값(구분 기준)</h4>
+            <table class="adjTable">
+              <thead><tr><th>구분</th><th>보정값</th></tr></thead>
+              <tbody id="adjScoreBody"></tbody>
+            </table>
+          </div>
+          <div class="adjPanel" style="margin-top:10px;">
+            <h4>보정이 필요한 선수</h4>
+            <table class="adjTable">
+              <thead>
+                <tr><th>선수</th><th>구분</th><th>추가 보정(+)</th><th>보정 사유</th></tr>
+              </thead>
+              <tbody id="adjNeededBody"><tr><td colspan="4" class="hint">로그를 입력하면 자동 표시됩니다.</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="stepProgress"></div>
-  <div id="currentInputLine">[현재 입력 중] → </div>
-  <div id="hint">ESC: 스텝 초기화 / Backspace: 한 단계 롤백 / 숫자키: 선택 / 선수선택: 1~9, q~t(한글자판 대응)</div>
-
-<div class="log">
-  <!-- 로그 헤더 -->
-  <div class="logHeader" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
-    <div style="display:flex; align-items:center; gap:8px;">
-      <h2 style="margin:0">입력 로그</h2>
-      <button id="toggleEdit" class="btn">로그 수정: OFF</button>
+  <!-- 로그 -->
+  <div class="log">
+    <div class="logHeader" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <h2 style="margin:0">입력 로그</h2>
+        <button id="toggleEdit" class="btn">로그 수정: OFF</button>
+      </div>
+      <div class="actions">
+        <button id="deleteSelected" class="btn">선택 삭제</button>
+        <button id="exportCsv" class="btn">CSV 다운로드</button>
+        <button id="copyCsv" class="btn">CSV 복사</button>
+        <button id="resetAll" class="btn-danger">전체 초기화</button>
+      </div>
     </div>
-
-    <!-- 우측 액션들 -->
-    <div class="actions">
-      <button id="deleteSelected" class="btn">선택 삭제</button>
-      <button id="exportCsv" class="btn">CSV 다운로드</button>
-      <button id="copyCsv" class="btn">CSV 복사</button>
-      <button id="resetAll" class="btn-danger">전체 초기화</button>
-    </div>
+    <table id="logTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>#</th>
+          <th>이닝</th>
+          <th>타순</th>
+          <th>선수</th>
+          <th>포지션</th>
+          <th>타구종류</th>
+          <th>성격</th>
+          <th>처리</th>
+          <th>처리2</th>
+          <th>최종</th>
+          <th>기록</th>
+          <th>코드</th>
+          <th>점수</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <!-- 테이블 -->
-  <table id="logTable">
-    <thead>
-      <tr>
-        <th><input type="checkbox" id="selectAll"></th>
-        <th>#</th>
-        <th>이닝</th>
-        <th>타순</th>
-        <th>선수</th>
-        <th>포지션</th>
-        <th>타구종류</th>
-        <th>성격</th>
-        <th>처리</th>
-        <th>처리2</th>
-        <th>최종</th>
-        <th>기록</th>
-        <th>코드</th>
-        <th>점수</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
 <script>
-/* ===================== 수비 로직 사양 (v1.0.0) =====================
-- 라인업 입력: 선발 1~9는 수비 포지션에 고정 매핑(1투,2포,3일,4이,5삼,6유,7좌,8중,9우)
-- 일정명 입력: CSV 추출 시 (# 헤더 → 성과객체명, 값 = "일정명 + 공백 + #", 마지막 컬럼으로 '일정명' 추가)
-- 포수 필드플레이 특수흐름:
-  6단계에서 [낫아웃 플레이 관련]/[도루 저지 관련] 선택 →
-  8단계에서 각 상세 선택 후 즉시 기록
-=============================================================== */
-
-// === 입력 필드 감지 유틸 ===
+/* ========= 공통 유틸 ========= */
 function isTypingInEditable(e){
-  const el = e.target;
-  return el && (
-    el.tagName === 'INPUT' ||
-    el.tagName === 'TEXTAREA' ||
-    el.isContentEditable === true
-  );
+  const el=e.target;
+  return el && (el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.isContentEditable===true);
 }
+function stripBr(s){ return (s||'').replace(/[\[\]]/g,''); }
 
-/* ====== 라인업/일정 상태 ====== */
-let starterKeys = ["1","2","3","4","5","6","7","8","9"];
-let benchKeys   = ["q","w","e","r","t"];
+/* ========= 라인업/상태 ========= */
+let starterKeys=["1","2","3","4","5","6","7","8","9"];
+let benchKeys=["q","w","e","r","t"];
+const STARTER_POS_LABEL={"1":"투수","2":"포수","3":"1루수","4":"2루수","5":"3루수","6":"유격수","7":"좌익수","8":"중견수","9":"우익수"};
+const POS_OPTIONS=["투수","포수","1루수","2루수","3루수","유격수","좌익수","중견수","우익수"];
+const DIV_OPTIONS=[{v:"IF",t:"IF(2·3·유)"},{v:"OF",t:"OF(좌·중·우)"},{v:"P",t:"P(투수)"},{v:"FC",t:"FC(1루·포수)"}];
 
-const STARTER_POS_LABEL = {
-  "1":"투수","2":"포수","3":"1루수","4":"2루수","5":"3루수","6":"유격수","7":"좌익수","8":"중견수","9":"우익수"
-};
-const POS_OPTIONS = ["투수","포수","1루수","2루수","3루수","유격수","좌익수","중견수","우익수"];
+let lineupMap={};          // 키 → 선수명
+let benchPosMap={};        // 교체 기본 포지션(선택)
+let playerDivMap={};       // 선수명 → 구분(IF/OF/P/FC)
+let lineupApplied=false;
+let scheduleName='';
 
-let lineupMap = {};       // key → player name
-let benchPosMap = {};     // bench key → default pos
-let lineupApplied = false;
-let scheduleName = '';    // 일정명
-
-/* ====== 단계/상태 ====== */
-const steps = [
-  { name: "1단계 · 이닝",   key: "INN",   options: ["[1회]","[2회]","[3회]","[4회]","[5회]","[6회]","[7회]","[8회]","[9회]"] },
-  { name: "2단계 · 타순",   key: "ORDER", options: ["[1번]","[2번]","[3번]","[4번]","[5번]","[6번]","[7번]","[8번]","[9번]"] },
-  { name: "3단계 · 선수",   key: "PLAYER",options: [] },
-  { name: "4단계 · 포지션", key: "POS",   options: POS_OPTIONS },
-  { name: "5단계 · 타구 종류", key: "SEED",  options: [] },
-  { name: "6단계 · 성격/처리", key: "CHAR",  options: [] },
-  { name: "7단계 · 처리/역할", key: "RES",   options: [] },   // (캐처 특수는 6단계에서 선택)
-  { name: "8단계 · 실책",     key: "ERR",   options: [] },
-  { name: "9단계 · 최종",     key: "FINAL", options: [] }
+/* ========= 단계/선택 ========= */
+const steps=[
+  {name:"1단계 · 이닝", key:"INN", options:["[1회]","[2회]","[3회]","[4회]","[5회]","[6회]","[7회]","[8회]","[9회]"]},
+  {name:"2단계 · 타순", key:"ORDER", options:["[1번]","[2번]","[3번]","[4번]","[5번]","[6번]","[7번]","[8번]","[9번]"]},
+  {name:"3단계 · 선수", key:"PLAYER", options:[]},
+  {name:"4단계 · 포지션", key:"POS", options:POS_OPTIONS},
+  {name:"5단계 · 타구 종류", key:"SEED", options:[]},
+  {name:"6단계 · 성격/처리", key:"CHAR", options:[]},
+  {name:"7단계 · 처리/역할", key:"RES", options:[]},
+  {name:"8단계 · 실책", key:"ERR", options:[]},
+  {name:"9단계 · 최종", key:"FINAL", options:[]}
 ];
+let currentStep=0;
+let currentValues=Array(steps.length).fill("");
+let logSeq=0;
 
-let currentStep = 0;
-let currentValues = Array(steps.length).fill("");
-let logSeq = 0;
-
-/* ====== 선택지 사전 ====== */
-const SEED_BY_POS = {
-  IF: ["[내야 땅볼]", "[내야 뜬공]", "[내야 필드플레이]"],
-  OF: ["[외야 뜬공]", "[외야 필드플레이]"],
-  _1B: ["[1루수 땅볼]", "[1루수 뜬공]", "[1루수 필드플레이]"],
-  C:   ["[포수 땅볼]", "[포수 뜬공]", "[포수 필드플레이]"]
-};
-const CHAR_OPTS_BASE = [
-  {key:"1", label:"[범타성]", cls:"green"},
-  {key:"2", label:"[안타성]", cls:"yellow"}
-];
-const DP_CHAR = {key:"3", label:"[병살타성]", cls:"green"};
-
-const RES_OPTS  = [
-  {key:"1", label:"[처리 성공]", cls:"green"},
-  {key:"2", label:"[실책]", cls:"red"}
-];
-const RES_DP = [
-  {key:"1", label:"[처리 성공(2아웃)]", cls:"green"},
-  {key:"2", label:"[처리 성공(1아웃)]", cls:"green"},
-  {key:"3", label:"[처리 실패(0아웃)]", cls:"red"}
-];
-const ERR_IF_GB = [
-  {key:"1", label:"[포구 실책]", cls:"red"},
-  {key:"2", label:"[송구 실책]", cls:"red"},
-  {key:"3", label:"[판단 실책]", cls:"red"}
-];
-const ERR_DP_ROLE = [
-  {key:"1", label:"[토스맨]"},
-  {key:"2", label:"[피벗맨]"}
-];
-
-const C_FP_BASE = [
-  {key:"1", label:"[필드 플레이 중 어시스트]", cls:"green"},
-  {key:"2", label:"[필드 플레이 중 풋아웃]", cls:"green"},
-  {key:"3", label:"[빠른 커버로 진루 저지]", cls:"green"},
-  {key:"4", label:"[추가 진루 허용/아웃 기회 놓침]", cls:"red"},
-  {key:"5", label:"[커버 플레이 실책]", cls:"red"},
-  {key:"6", label:"[블로킹으로 진루 저지]", cls:"green"},
-  {key:"7", label:"[포일로 진루 허용]", cls:"red"},
-  {key:"8", label:"[낫아웃 플레이 관련]"},
-  {key:"9", label:"[도루 저지 관련]", cls:"green"}
-];
-
-// (호환용: 예전 분기값)
-const C_FP_SPECIAL_BRANCH = [
-  {key:"1", label:"[낫아웃 플레이]"},
-  {key:"2", label:"[도루 저지 플레이]"}
-];
-
-// 8단계(최종) – 낫아웃 세부
-const C_NA_FINAL = [
-  {key:"1", label:"[폭투 낫아웃 플레이 성공]", cls:"green"},
-  {key:"2", label:"[포일 낫아웃 플레이 성공]", cls:"yellow"},
-  {key:"3", label:"[폭투 낫아웃 플레이 실책]", cls:"red"},
-  {key:"4", label:"[포일 낫아웃 플레이 실책]", cls:"red"}
-];
-
-// 8단계(최종) – 도루 저지 세부
-const C_CS_FINAL = [
-  {key:"1", label:"[2루 도루 저지 성공]", cls:"green"},
-  {key:"2", label:"[3루 도루 저지 성공]", cls:"green"}
-];
-
-const FINAL_DICT = {
-  IF_FB_any: [ {key:"1", label:"[처리 성공]", cls:"green"}, {key:"2", label:"[실책]", cls:"red"} ],
-  OF_FB_any: [ {key:"1", label:"[처리 성공]", cls:"green"}, {key:"2", label:"[실책]", cls:"red"} ],
-  IF_GB_B_O: [ {key:"1", label:"[클린 송구로 처리]", cls:"green"}, {key:"2", label:"[오프라인 송구로 처리]", cls:"yellow"} ],
-  IF_GB_B_E_FMB: [ {key:"1", label:"[단순 포구 실수]", cls:"red"}, {key:"2", label:"[터널]", cls:"red"} ],
-  IF_GB_B_E_THROW: [ {key:"1", label:"[오프라인 송구로 실책]", cls:"yellow"}, {key:"2", label:"[와일드 송구로 실책]", cls:"red"} ],
-  IF_GB_B_E_JUDG: [ {key:"1", label:"[판단 실책]", cls:"red"} ],
-  DP_TOSS_FINAL: [ {key:"1", label:"[토스맨 무브 클린]", cls:"green"}, {key:"2", label:"[토스맨 무브 에러]", cls:"red"} ],
-  DP_PIVOT_FINAL:[ {key:"1", label:"[피벗맨 무브 클린]", cls:"green"}, {key:"2", label:"[피벗맨 무브 에러]", cls:"red"} ],
-  IF_FP: [
-    {key:"1", label:"[필드 플레이 중 어시스트]", cls:"green"},
-    {key:"2", label:"[필드 플레이 중 풋아웃]", cls:"green"},
-    {key:"3", label:"[빠른 커버로 진루 저지]", cls:"green"},
-    {key:"4", label:"[추가 진루 허용/아웃 기회 놓침]", cls:"red"},
-    {key:"5", label:"[커버 플레이 실책]", cls:"red"}
-  ],
-  OF_FP: [
-    {key:"1", label:"[진루 저지(빠른 커버)]", cls:"green"},
-    {key:"2", label:"[진루 저지(외야 송구)]", cls:"green"},
-    {key:"3", label:"[외야 어시스트]", cls:"green"},
-    {key:"4", label:"[추가 진루 허용/아웃 기회 놓침]", cls:"red"},
-    {key:"5", label:"[커버 플레이 실책]", cls:"red"}
-  ],
-  _1B_FP: [
-    {key:"1", label:"[필드 플레이 중 어시스트]", cls:"green"},
-    {key:"2", label:"[필드 플레이 중 풋아웃]", cls:"green"},
-    {key:"3", label:"[빠른 커버로 진루 저지]", cls:"green"},
-    {key:"4", label:"[추가 진루 허용/아웃 기회 놓침]", cls:"red"},
-    {key:"5", label:"[커버 플레이 실책]", cls:"red"},
-    {key:"6", label:"[1루수 스쿱 캐치(원바운드 캐치)]", cls:"green"}
-  ]
+/* ========= 선택지 정의 ========= */
+const SEED_BY_POS={ IF:["[내야 땅볼]","[내야 뜬공]","[내야 필드플레이]"], OF:["[외야 뜬공]","[외야 필드플레이]"], _1B:["[1루수 땅볼]","[1루수 뜬공]","[1루수 필드플레이]"], C:["[포수 땅볼]","[포수 뜬공]","[포수 필드플레이]"] };
+const CHAR_OPTS_BASE=[{key:"1",label:"[범타성]",cls:"green"},{key:"2",label:"[안타성]",cls:"yellow"}];
+const DP_CHAR={key:"3",label:"[병살타성]",cls:"green"};
+const RES_OPTS=[{key:"1",label:"[처리 성공]",cls:"green"},{key:"2",label:"[실책]",cls:"red"}];
+const RES_DP=[{key:"1",label:"[처리 성공(2아웃)]",cls:"green"},{key:"2",label:"[처리 성공(1아웃)]",cls:"green"},{key:"3",label:"[처리 실패(0아웃)]",cls:"red"}];
+const ERR_IF_GB=[{key:"1",label:"[포구 실책]",cls:"red"},{key:"2",label:"[송구 실책]",cls:"red"},{key:"3",label:"[판단 실책]",cls:"red"}];
+const ERR_DP_ROLE=[{key:"1",label:"[토스맨]"}, {key:"2",label:"[피벗맨]"}];
+const C_FP_BASE=[{key:"1",label:"[필드 플레이 중 어시스트]",cls:"green"},{key:"2",label:"[필드 플레이 중 풋아웃]",cls:"green"},{key:"3",label:"[빠른 커버로 진루 저지]",cls:"green"},{key:"4",label:"[추가 진루 허용/아웃 기회 놓침]",cls:"red"},{key:"5",label:"[커버 플레이 실책]",cls:"red"},{key:"6",label:"[블로킹으로 진루 저지]",cls:"green"},{key:"7",label:"[포일로 진루 허용]",cls:"red"},{key:"8",label:"[낫아웃 플레이 관련]"}, {key:"9",label:"[도루 저지 관련]",cls:"green"}];
+const C_NA_FINAL=[{key:"1",label:"[폭투 낫아웃 플레이 성공]",cls:"green"},{key:"2",label:"[포일 낫아웃 플레이 성공]",cls:"yellow"},{key:"3",label:"[폭투 낫아웃 플레이 실책]",cls:"red"},{key:"4",label:"[포일 낫아웃 플레이 실책]",cls:"red"}];
+const C_CS_FINAL=[{key:"1",label:"[2루 도루 저지 성공]",cls:"green"},{key:"2",label:"[3루 도루 저지 성공]",cls:"green"}];
+const FINAL_DICT={ IF_FB_any:[{key:"1",label:"[처리 성공]",cls:"green"},{key:"2",label:"[실책]",cls:"red"}],
+  OF_FB_any:[{key:"1",label:"[처리 성공]",cls:"green"},{key:"2",label:"[실책]",cls:"red"}],
+  IF_GB_B_O:[{key:"1",label:"[클린 송구로 처리]",cls:"green"},{key:"2",label:"[오프라인 송구로 처리]",cls:"yellow"}],
+  IF_GB_B_E_FMB:[{key:"1",label:"[단순 포구 실수]",cls:"red"},{key:"2",label:"[터널]",cls:"red"}],
+  IF_GB_B_E_THROW:[{key:"1",label:"[오프라인 송구로 실책]",cls:"yellow"},{key:"2",label:"[와일드 송구로 실책]",cls:"red"}],
+  IF_GB_B_E_JUDG:[{key:"1",label:"[판단 실책]",cls:"red"}],
+  DP_TOSS_FINAL:[{key:"1",label:"[토스맨 무브 클린]",cls:"green"},{key:"2",label:"[토스맨 무브 에러]",cls:"red"}],
+  DP_PIVOT_FINAL:[{key:"1",label:"[피벗맨 무브 클린]",cls:"green"},{key:"2",label:"[피벗맨 무브 에러]",cls:"red"}],
+  IF_FP:[{key:"1",label:"[필드 플레이 중 어시스트]",cls:"green"},{key:"2",label:"[필드 플레이 중 풋아웃]",cls:"green"},{key:"3",label:"[빠른 커버로 진루 저지]",cls:"green"},{key:"4",label:"[추가 진루 허용/아웃 기회 놓침]",cls:"red"},{key:"5",label:"[커버 플레이 실책]",cls:"red"}],
+  OF_FP:[{key:"1",label:"[진루 저지(빠른 커버)]",cls:"green"},{key:"2",label:"[진루 저지(외야 송구)]",cls:"green"},{key:"3",label:"[외야 어시스트]",cls:"green"},{key:"4",label:"[추가 진루 허용/아웃 기회 놓침]",cls:"red"},{key:"5",label:"[커버 플레이 실책]",cls:"red"}],
+  _1B_FP:[{key:"1",label:"[필드 플레이 중 어시스트]",cls:"green"},{key:"2",label:"[필드 플레이 중 풋아웃]",cls:"green"},{key:"3",label:"[빠른 커버로 진루 저지]",cls:"green"},{key:"4",label:"[추가 진루 허용/아웃 기회 놓침]",cls:"red"},{key:"5",label:"[커버 플레이 실책]",cls:"red"},{key:"6",label:"[1루수 스쿱 캐치(원바운드 캐치)]",cls:"green"}]
 };
 
-/* ====== 로컬스토리지 키 (v1.0.0으로 분리) ====== */
-const LS = { state: 'eagles_def_v100_state', table: 'eagles_def_v100_table', lineup: 'eagles_def_v100_lineup' };
-function saveAll(){
-  try{
-    localStorage.setItem(LS.state, JSON.stringify({ currentStep, currentValues, logSeq, lineupApplied, scheduleName }));
-    localStorage.setItem(LS.table, JSON.stringify(serializeTable()));
-    localStorage.setItem(LS.lineup, JSON.stringify({ lineupMap, benchPosMap, starterKeys, benchKeys }));
-  }catch(e){ console.warn('저장 실패', e); }
-}
-function loadAll(){
-  try{
-    const s = JSON.parse(localStorage.getItem(LS.state)||'null');
-    if(s){
-      currentStep = s.currentStep||0;
-      currentValues = s.currentValues||Array(steps.length).fill("");
-      logSeq = s.logSeq||0;
-      lineupApplied = !!s.lineupApplied;
-      scheduleName = s.scheduleName||'';
-      const inp = document.getElementById('scheduleName'); if(inp) inp.value = scheduleName;
-      updateSchedulePreview();
-    }
-    const rows = JSON.parse(localStorage.getItem(LS.table)||'null');
-    if(Array.isArray(rows)) { renderTableFrom(rows); updateRecentInningFromTable(); renderAdjustmentScores(); }
-    const l = JSON.parse(localStorage.getItem(LS.lineup)||'null');
-    if(l && l.lineupMap){
-      lineupMap=l.lineupMap||{};
-      benchPosMap=l.benchPosMap||{};
-      renderLineupSummary();
-      buildPlayerStepOptions();
-      const hasLineup = Object.values(lineupMap).some(x=>x&&x.trim());
-      lineupApplied = !!hasLineup;
-      document.getElementById('lineupInput').style.display  = hasLineup? 'none':'block';
-      document.getElementById('lineupSummary').style.display= hasLineup? 'block':'none';
-    } else {
-      document.getElementById('lineupInput').style.display='block';
-      document.getElementById('lineupSummary').style.display='none';
-    }
-  }catch(e){ console.warn('복구 실패', e); }
-}
-function clearAll(){ localStorage.removeItem(LS.state); localStorage.removeItem(LS.table); localStorage.removeItem(LS.lineup); }
+/* ========= 저장키 ========= */
+const LS={ state:'eagles_def_v112_state', table:'eagles_def_v112_table', lineup:'eagles_def_v112_lineup' };
 
-/* ====== UI 렌더 ====== */
-function updateSchedulePreview(){
-  const el = document.getElementById('schedulePreview');
-  if(el) el.textContent = `일정명: ${scheduleName || '-'}`;
-}
-function updateStepProgress(){
-  const el = document.getElementById('stepProgress'); el.innerHTML='';
-  steps.forEach((s,i)=>{ const d=document.createElement('div'); d.className='stepBox'+(i===currentStep?' active':''); d.textContent=s.name; el.appendChild(d); });
-}
-function updateLegend(){
-  const list = document.getElementById('legendList'); list.innerHTML='';
-  const opts = (steps[currentStep]||{}).options || [];
-  opts.forEach((opt,i)=>{
-    const li=document.createElement('li');
-    if(typeof opt==='string') li.textContent = `${i+1} - ${opt}`;
-    else li.innerHTML = `<span class="${opt.cls||''}">${opt.key?opt.key+" - ":''}${opt.label}</span>`;
-    list.appendChild(li);
-  });
-}
-function updateCurrentLine(){
-  const text = currentValues.map(v=>v||'-').join(' / ');
-  const el = document.getElementById('currentInputLine');
-  el.textContent = `[현재 입력 중] → ${text}`;
-  el.classList.add('flash-bg'); setTimeout(()=>el.classList.remove('flash-bg'), 600);
-}
-function renderAll(){ updateStepProgress(); updateLegend(); updateCurrentLine(); }
-
-/* ====== 라인업 입력 UI ====== */
+/* ========= 라인업 입력 UI 구성 ========= */
 (function setupLineupUI(){
-  const starterDiv = document.getElementById('starterInputs');
-  starterKeys.forEach((k, idx)=>{
-    const pos = STARTER_POS_LABEL[k];
-    const row = document.createElement('div'); row.className='row';
-    row.innerHTML = `<span class="key">${k}</span><span class="posTag">${pos}</span>
-      <input id="starter${idx}" placeholder="선수명">`;
+  const starterDiv=document.getElementById('starterInputs');
+  starterKeys.forEach((k,idx)=>{
+    const pos=STARTER_POS_LABEL[k];
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML=`
+      <span class="key">${k}</span><span class="badge">${pos}</span>
+      <input id="starter${idx}" placeholder="선수명" style="flex:1">
+      <select id="starterDiv${idx}" title="구분">
+        ${DIV_OPTIONS.map(d=>`<option value="${d.v}">${d.t}</option>`).join('')}
+      </select>`;
     starterDiv.appendChild(row);
   });
 
-  const benchDiv = document.getElementById('benchInputs');
-  benchKeys.forEach((k, idx)=>{
-    const row = document.createElement('div'); row.className='row';
-    row.innerHTML = `<span class="key">${k}</span>
-      <input id="bench${idx}" placeholder="선수명">
+  const benchDiv=document.getElementById('benchInputs');
+  benchKeys.forEach((k,idx)=>{
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML=`
+      <span class="key">${k}</span>
+      <input id="bench${idx}" placeholder="선수명" style="flex:1">
       <select id="benchPos${idx}">
         <option value="">(기본 포지션 선택)</option>
         ${POS_OPTIONS.map(p=>`<option value="${p}">${p}</option>`).join('')}
+      </select>
+      <select id="benchDiv${idx}" title="구분">
+        ${DIV_OPTIONS.map(d=>`<option value="${d.v}">${d.t}</option>`).join('')}
       </select>`;
     benchDiv.appendChild(row);
   });
@@ -466,87 +305,60 @@ function renderAll(){ updateStepProgress(); updateLegend(); updateCurrentLine();
   document.getElementById('applyLineupBtn').addEventListener('click', applyLineup);
   document.getElementById('clearLineupBtn').addEventListener('click', clearLineupInputs);
 
-  const sch = document.getElementById('scheduleName');
-  if (sch){
-    sch.addEventListener('input', ()=>{
-      scheduleName = sch.value.trim();
-      updateSchedulePreview();
-      saveAll();
-    });
-  }
+  const sch=document.getElementById('scheduleName');
+  if(sch){ sch.addEventListener('input', ()=>{ scheduleName=sch.value.trim(); updateSchedulePreview(); saveAll(); }); }
 })();
 
 function clearLineupInputs(){
   const sch=document.getElementById('scheduleName'); if(sch) sch.value='', scheduleName='';
-  for(let i=0;i<9;i++){ const el=document.getElementById(`starter${i}`); if(el) el.value=''; }
+  for(let i=0;i<9;i++){ const n=document.getElementById(`starter${i}`); if(n) n.value=''; }
+  for(let i=0;i<9;i++){ const d=document.getElementById(`starterDiv${i}`); if(d) d.value='IF'; }
   for(let i=0;i<5;i++){
-    const el=document.getElementById(`bench${i}`); if(el) el.value='';
-    const sl=document.getElementById(`benchPos${i}`); if(sl) sl.value='';
+    const n=document.getElementById(`bench${i}`); if(n) n.value='';
+    const p=document.getElementById(`benchPos${i}`); if(p) p.value='';
+    const d=document.getElementById(`benchDiv${i}`); if(d) d.value='IF';
   }
   updateSchedulePreview();
 }
 function applyLineup(){
-  const sch=document.getElementById('scheduleName');
-  scheduleName = (sch && sch.value.trim()) || '';
-  updateSchedulePreview();
-
-  lineupMap={}; benchPosMap={};
+  const sch=document.getElementById('scheduleName'); scheduleName=(sch&&sch.value.trim())||''; updateSchedulePreview();
+  lineupMap={}; benchPosMap={}; playerDivMap={};
   for(let i=0;i<9;i++){
-    const v=document.getElementById(`starter${i}`).value;
-    if(v) lineupMap[starterKeys[i]] = v;
+    const name=(document.getElementById(`starter${i}`)?.value||'').trim();
+    const div=(document.getElementById(`starterDiv${i}`)?.value||'IF');
+    if(name){ lineupMap[starterKeys[i]]=name; playerDivMap[name]=div; }
   }
   for(let i=0;i<5;i++){
-    const name=document.getElementById(`bench${i}`).value;
-    const pos =document.getElementById(`benchPos${i}`).value;
-    if(name) lineupMap[benchKeys[i]] = name;
-    if(pos) benchPosMap[benchKeys[i]] = pos;
+    const name=(document.getElementById(`bench${i}`)?.value||'').trim();
+    const pos =(document.getElementById(`benchPos${i}`)?.value||'').trim();
+    const div =(document.getElementById(`benchDiv${i}`)?.value||'IF');
+    if(name){ lineupMap[benchKeys[i]]=name; playerDivMap[name]=div; }
+    if(pos){ benchPosMap[benchKeys[i]]=pos; }
   }
-  lineupApplied = Object.values(lineupMap).some(x=>x && x.trim());
+  lineupApplied=Object.values(lineupMap).some(x=>x&&x.trim());
   buildPlayerStepOptions();
   renderLineupSummary();
-  document.getElementById('lineupInput').style.display = lineupApplied? 'none':'block';
-  document.getElementById('lineupSummary').style.display = lineupApplied? 'block':'none';
+  document.getElementById('lineupInput').style.display=lineupApplied?'none':'block';
+  document.getElementById('lineupSummary').style.display=lineupApplied?'block':'none';
   saveAll();
 }
+
+/* ========= 표시 보조 ========= */
+function updateSchedulePreview(){ const el=document.getElementById('schedulePreview'); if(el) el.textContent=`일정명: ${scheduleName||'-'}`; }
+function updateStepProgress(){ const el=document.getElementById('stepProgress'); el.innerHTML=''; steps.forEach((s,i)=>{ const d=document.createElement('div'); d.className='stepBox'+(i===currentStep?' active':''); d.textContent=s.name; el.appendChild(d); }); }
+function updateLegend(){ const list=document.getElementById('legendList'); list.innerHTML=''; const opts=(steps[currentStep]||{}).options||[]; opts.forEach((opt,i)=>{ const li=document.createElement('li'); if(typeof opt==='string') li.textContent=`${i+1} - ${opt}`; else li.innerHTML=`<span class="${opt.cls||''}">${opt.key?opt.key+' - ':''}${opt.label}</span>`; list.appendChild(li); }); }
+function updateCurrentLine(){ const text=currentValues.map(v=>v||'-').join(' / '); const el=document.getElementById('currentInputLine'); el.textContent=`[현재 입력 중] → ${text}`; el.classList.add('flash-bg'); setTimeout(()=>el.classList.remove('flash-bg'),600); }
+function renderAll(){ updateStepProgress(); updateLegend(); updateCurrentLine(); }
+
+/* ========= 선수 선택 옵션 ========= */
 function buildPlayerStepOptions(){
   const players=[];
-  starterKeys.forEach(k=>{ if(lineupMap[k]) players.push({ key:k, label: `${lineupMap[k]}` }); });
-  benchKeys.forEach(k=>{ if(lineupMap[k]) players.push({ key:k, label: `${lineupMap[k]}` }); });
-  steps[2].options = players;
-}
-function renderLineupSummary(){
-  const starterList = document.getElementById('starterList');
-  const benchList   = document.getElementById('benchList');
-  starterList.innerHTML=''; benchList.innerHTML='';
-
-  starterKeys.forEach(k=>{
-    const name = lineupMap[k] || '';
-    const pos  = STARTER_POS_LABEL[k];
-    const div = document.createElement('div');
-    div.innerHTML = name
-      ? `<span class="key">${k}</span> <span class="badge">${pos}</span> ${name}`
-      : `<span class="key">${k}</span> <span class="badge">${pos}</span> -`;
-    starterList.appendChild(div);
-  });
-
-  benchKeys.forEach(k=>{
-    const name = lineupMap[k] || '';
-       const pos  = benchPosMap[k] ? benchPosMap[k] : '';
-    const div = document.createElement('div');
-    const posHtml = pos ? ` <span class="badge">${pos}</span>` : '';
-    div.innerHTML = `<span class="key">${k}</span>${posHtml} ${name || '-'}`;
-    benchList.appendChild(div);
-  });
-}
-function normalizePlayerKey(key){
-  const map={ 'ㅂ':'q','ㅈ':'w','ㄷ':'e','ㄱ':'r','ㅅ':'t' };
-  if(key.length===1) return (map[key]||key).toLowerCase();
-  return key;
+  starterKeys.forEach(k=>{ if(lineupMap[k]) players.push({key:k,label:`${lineupMap[k]}`}); });
+  benchKeys.forEach(k=>{ if(lineupMap[k]) players.push({key:k,label:`${lineupMap[k]}`}); });
+  steps[2].options=players;
 }
 
-/* ====== 단계 전개/입력 로직 ====== */
-function at(i){ return currentValues[i]||''; }
-function setStepOptions(idx, arr){ steps[idx].options = arr; }
+/* ========= 그룹/구분 판정 ========= */
 function posToGroup(pos){
   if(pos==='포수') return 'C';
   if(pos==='1루수') return '_1B';
@@ -554,480 +366,332 @@ function posToGroup(pos){
   if(pos==='투수'||pos==='2루수'||pos==='3루수'||pos==='유격수') return 'IF';
   return 'IF';
 }
-function resolveSeedOptions(){
-  const grp = posToGroup(at(3));
-  const m = (SEED_BY_POS[grp] || []);
-  setStepOptions(4, m);
+function posToDivision(pos){
+  if(pos==='투수') return 'P';
+  if(pos==='좌익수'||pos==='중견수'||pos==='우익수') return 'OF';
+  if(pos==='1루수'||pos==='포수') return 'FC';
+  if(pos==='2루수'||pos==='3루수'||pos==='유격수') return 'IF';
+  return 'IF';
 }
 
+/* ========= 단계 전개 ========= */
+function at(i){ return currentValues[i]||''; }
+function setStepOptions(idx,arr){ steps[idx].options=arr; }
+function resolveSeedOptions(){ const grp=posToGroup(at(3)); setStepOptions(4,(SEED_BY_POS[grp]||[])); }
 function resolveCharOptions(){
-  const grp  = posToGroup(at(3));
-  const seed = at(4);
-  if (grp === 'C') {
-    if (seed === '[포수 땅볼]' || seed === '[포수 뜬공]') { setStepOptions(5, CHAR_OPTS_BASE); return; }
-    if (seed === '[포수 필드플레이]') { setStepOptions(5, ['-']); return; }
-  }
-  if (grp === '_1B') {
-    if (seed === '[1루수 땅볼]' || seed === '[1루수 뜬공]') { setStepOptions(5, CHAR_OPTS_BASE); return; }
-    if (seed === '[1루수 필드플레이]') { setStepOptions(5, ['-']); return; }
-  }
-  // ✅ 내야 뜬공은 더 이상 막지 않고, 필드플레이만 '-' 처리
-  if (seed === '[내야 필드플레이]' || seed === '[외야 필드플레이]') {
-    setStepOptions(5, ['-']); return;
-  }
-  const base = [...CHAR_OPTS_BASE];
-  if (posToGroup(at(3))==='IF' && seed==='[내야 땅볼]') base.push(DP_CHAR);
-  setStepOptions(5, base);
+  const grp=posToGroup(at(3)); const seed=at(4);
+  if(grp==='C'){ if(seed==='[포수 땅볼]'||seed==='[포수 뜬공]'){ setStepOptions(5,CHAR_OPTS_BASE); return; } if(seed==='[포수 필드플레이]'){ setStepOptions(5,['-']); return; } }
+  if(grp==='_1B'){ if(seed==='[1루수 땅볼]'||seed==='[1루수 뜬공]'){ setStepOptions(5,CHAR_OPTS_BASE); return; } if(seed==='[1루수 필드플레이]'){ setStepOptions(5,['-']); return; } }
+  if(seed==='[내야 필드플레이]'||seed==='[외야 필드플레이]'){ setStepOptions(5,['-']); return; }
+  const base=[...CHAR_OPTS_BASE]; if(posToGroup(at(3))==='IF'&&seed==='[내야 땅볼]') base.push(DP_CHAR); setStepOptions(5,base);
 }
-
 function resolveResOptions(){
-  const grp  = posToGroup(at(3));
-  const seed = at(4);
-  const char = at(5);
-  if (grp === 'C') {
-    if (seed === '[포수 땅볼]' || seed === '[포수 뜬공]') { setStepOptions(6, RES_OPTS); return; }
-    if (seed === '[포수 필드플레이]') { setStepOptions(6, C_FP_BASE); return; } // 일반 + 특수 진입 포함
-  }
-  if (grp === '_1B') {
-    if (seed === '[1루수 땅볼]' || seed === '[1루수 뜬공]') { setStepOptions(6, RES_OPTS); return; }
-    if (seed === '[1루수 필드플레이]') { setStepOptions(6, FINAL_DICT._1B_FP); return; }
-  }
-  if (seed === '[내야 뜬공]' || seed === '[외야 뜬공]' || seed === '[내야 필드플레이]' || seed === '[외야 필드플레이]') {
-    setStepOptions(6, ['-']); return;
-  }
-  if (grp==='IF' && seed==='[내야 땅볼]' && char==='[병살타성]') { setStepOptions(6, RES_DP); return; }
-  if (grp === 'IF' && seed === '[내야 땅볼]' && char === '[안타성]') { setStepOptions(6, ['-']); return; }
-  setStepOptions(6, RES_OPTS);
+  const grp=posToGroup(at(3)); const seed=at(4); const char=at(5);
+  if(grp==='C'){ if(seed==='[포수 땅볼]'||seed==='[포수 뜬공]'){ setStepOptions(6,RES_OPTS); return; } if(seed==='[포수 필드플레이]'){ setStepOptions(6,C_FP_BASE); return; } }
+  if(grp==='_1B'){ if(seed==='[1루수 땅볼]'||seed==='[1루수 뜬공]'){ setStepOptions(6,RES_OPTS); return; } if(seed==='[1루수 필드플레이]'){ setStepOptions(6,FINAL_DICT._1B_FP); return; } }
+  if(seed==='[내야 뜬공]'||seed==='[외야 뜬공]'||seed==='[내야 필드플레이]'||seed==='[외야 필드플레이]'){ setStepOptions(6,['-']); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&char==='[병살타성]'){ setStepOptions(6,RES_DP); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&char==='[안타성]'){ setStepOptions(6,['-']); return; }
+  setStepOptions(6,RES_OPTS);
 }
 function resolveErrOptions(){
-  const grp  = posToGroup(at(3));
-  const seed = at(4);
-  const res  = at(6);
-  if (grp === 'C') { setStepOptions(7, ['-']); return; } // 캐처 특수는 6단계에서 이미 선택
-  if (grp === '_1B') { setStepOptions(7, ['-']); return; }
-  if (seed === '[내야 뜬공]' || seed === '[외야 뜬공]' || seed === '[내야 필드플레이]' || seed === '[외야 필드플레이]') { setStepOptions(7, ['-']); return; }
-  if (grp==='IF' && seed==='[내야 땅볼]' && at(5)==='[병살타성]') { setStepOptions(7, ERR_DP_ROLE); return; }
-  if (grp === 'IF' && seed === '[내야 땅볼]' && at(5) === '[안타성]') { setStepOptions(7, ['-']); return; }
-  const isIFGB_B_E = (grp === 'IF' && seed === '[내야 땅볼]' && at(5) === '[범타성]' && at(6) === '[실책]');
-  setStepOptions(7, isIFGB_B_E ? ERR_IF_GB : ['-']);
+  const grp=posToGroup(at(3)); const seed=at(4);
+  if(grp==='C'||grp==='_1B'){ setStepOptions(7,['-']); return; }
+  if(seed==='[내야 뜬공]'||seed==='[외야 뜬공]'||seed==='[내야 필드플레이]'){ setStepOptions(7,['-']); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[병살타성]'){ setStepOptions(7,ERR_DP_ROLE); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[안타성]'){ setStepOptions(7,['-']); return; }
+  const isIFGB_B_E=(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[범타성]'&&at(6)==='[실책]');
+  setStepOptions(7,isIFGB_B_E?ERR_IF_GB:['-']);
 }
 function resolveFinalOptions(){
-  const grp  = posToGroup(at(3));
-  const seed = at(4);
-  const err  = at(7); // (호환용)
-  const res  = at(6);
-
-  if (grp === 'C') {
-    if (seed === '[포수 필드플레이]') {
-      if (res === '[낫아웃 플레이 관련]') { setStepOptions(8, C_NA_FINAL); return; }
-      if (res === '[도루 저지 관련]')   { setStepOptions(8, C_CS_FINAL); return; }
-      if (err === '[낫아웃 플레이]')     { setStepOptions(8, C_NA_FINAL); return; } // 구버전 호환
-      if (err === '[도루 저지 플레이]')  { setStepOptions(8, C_CS_FINAL); return; }
-    }
-    setStepOptions(8, ['-']); return;
-  }
-
-  if (grp === '_1B') { setStepOptions(8, ['-']); return; }
-
-  if (seed === '[내야 필드플레이]' || seed === '[외야 필드플레이]') {
-    if (grp === 'IF' && seed === '[내야 필드플레이]') setStepOptions(8, FINAL_DICT.IF_FP);
-    else if (grp === 'OF' && seed === '[외야 필드플레이]') setStepOptions(8, FINAL_DICT.OF_FP);
-    else setStepOptions(8, ['-']);
+  const grp=posToGroup(at(3)); const seed=at(4); const err=at(7); const res=at(6);
+  if(grp==='C'){ if(seed==='[포수 필드플레이]'){ if(res==='[낫아웃 플레이 관련]'){ setStepOptions(8,C_NA_FINAL); return; } if(res==='[도루 저지 관련]'){ setStepOptions(8,C_CS_FINAL); return; } } setStepOptions(8,['-']); return; }
+  if(grp==='_1B'){ setStepOptions(8,['-']); return; }
+  if(seed==='[내야 필드플레이]'||seed==='[외야 필드플레이]'){ if(grp==='IF'&&seed==='[내야 필드플레이]') setStepOptions(8,FINAL_DICT.IF_FP); else if(grp==='OF'&&seed==='[외야 필드플레이]') setStepOptions(8,FINAL_DICT.OF_FP); else setStepOptions(8,['-']); return; }
+  if(seed==='[내야 뜬공]'){ setStepOptions(8,FINAL_DICT.IF_FB_any); return; }
+  if(seed==='[외야 뜬공]'){ setStepOptions(8,FINAL_DICT.OF_FB_any); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[안타성]'){ setStepOptions(8,[{key:'1',label:'[처리 성공]',cls:'green'},{key:'2',label:'[실책]',cls:'red'}]); return; }
+  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[범타성]'){
+    if(at(6)==='[처리 성공]') setStepOptions(8,FINAL_DICT.IF_GB_B_O);
+    else if(at(6)==='[실책]'){
+      if(at(7)==='[포구 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_FMB);
+      else if(at(7)==='[송구 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_THROW);
+      else if(at(7)==='[판단 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_JUDG);
+      else setStepOptions(8,['-']);
+    } else setStepOptions(8,['-']);
     return;
   }
-  if (seed === '[내야 뜬공]') { setStepOptions(8, FINAL_DICT.IF_FB_any); return; }
-  if (seed === '[외야 뜬공]') { setStepOptions(8, FINAL_DICT.OF_FB_any); return; }
-  if (grp === 'IF' && seed === '[내야 땅볼]' && at(5) === '[안타성]') {
-    setStepOptions(8, [{key:'1',label:'[처리 성공]',cls:'green'},{key:'2',label:'[실책]',cls:'red'}]); return;
-  }
-  if (grp==='IF' && seed==='[내야 땅볼]' && at(5)==='[병살타성]') {
-    if (at(6) === '[처리 성공(2아웃)]') { setStepOptions(8, ERR_DP_ROLE); return; }
-    if (at(6) === '[처리 성공(1아웃)]' || at(6) === '[처리 실패(0아웃)]') {
-      if (at(7) === '[토스맨]') setStepOptions(8, FINAL_DICT.DP_TOSS_FINAL);
-      else if (at(7) === '[피벗맨]') setStepOptions(8, FINAL_DICT.DP_PIVOT_FINAL);
-      else setStepOptions(8, ['-']); return;
-    }
-  }
-  if (grp === 'IF' && seed === '[내야 땅볼]' && at(5) === '[범타성]') {
-    if (at(6) === '[처리 성공]') setStepOptions(8, FINAL_DICT.IF_GB_B_O);
-    else if (at(6) === '[실책]') {
-      if      (at(7) === '[포구 실책]') setStepOptions(8, FINAL_DICT.IF_GB_B_E_FMB);
-      else if (at(7) === '[송구 실책]') setStepOptions(8, FINAL_DICT.IF_GB_B_E_THROW);
-      else if (at(7) === '[판단 실책]') setStepOptions(8, FINAL_DICT.IF_GB_B_E_JUDG);
-      else setStepOptions(8, ['-']);
-    } else setStepOptions(8, ['-']);
-    return;
-  }
-  setStepOptions(8, ['-']);
+  setStepOptions(8,['-']);
 }
 function cascadeOptions(){ resolveSeedOptions(); resolveCharOptions(); resolveResOptions(); resolveErrOptions(); resolveFinalOptions(); }
 
-/* ====== 자동 스킵(‘-’ 단계) ====== */
-function isDashOnlyOptions(idx){
-  const opts = (steps[idx]?.options) || [];
-  return opts.length === 1 && (typeof opts[0] === 'string') && opts[0] === '-';
-}
-function autoSkipFrom(idx){
-  let i = idx;
-  while (i < steps.length) {
-    if (currentValues[i]) break;
-    if (!isDashOnlyOptions(i)) break;
-    currentValues[i] = '-';
-    if (i === 3 || i === 4 || i === 5 || i === 6 || i === 7) cascadeOptions();
-    i++;
-  }
-  return i;
-}
+/* ========= 자동 스킵 ========= */
+function isDashOnlyOptions(idx){ const opts=(steps[idx]?.options)||[]; return opts.length===1 && typeof opts[0]==='string' && opts[0]==='-'; }
+function autoSkipFrom(idx){ let i=idx; while(i<steps.length){ if(currentValues[i]) break; if(!isDashOnlyOptions(i)) break; currentValues[i]='-'; if(i===3||i===4||i===5||i===6||i===7) cascadeOptions(); i++; } return i; }
 
-/* ====== 키보드 입력 ====== */
-document.addEventListener('keydown', (e)=>{
-  if (isTypingInEditable(e)) return;
-
+/* ========= 입력 핸들 ========= */
+document.addEventListener('keydown',(e)=>{
+  if(isTypingInEditable(e)) return;
   if(e.key==='Escape'){ currentStep=0; currentValues=Array(steps.length).fill(''); cascadeOptions(); saveAll(); renderAll(); return; }
   if(e.key==='Backspace'){ if(currentStep>0){ currentStep--; currentValues[currentStep]=''; cascadeOptions(); saveAll(); renderAll(); } e.preventDefault(); return; }
 
-  const opts = steps[currentStep].options || [];
-
-  // 선수 선택(라인업): step 2
+  const opts=steps[currentStep].options||[];
   if(currentStep===2){
     if(!lineupApplied){ alert('먼저 라인업을 적용하세요.'); return; }
-    const k = normalizePlayerKey(e.key);
-    if(lineupMap[k]){ currentValues[2] = `${lineupMap[k]}`; stepAdvance(); }
+    const k=normalizePlayerKey(e.key); if(lineupMap[k]){ currentValues[2]=`${lineupMap[k]}`; stepAdvance(); }
     return;
   }
-
-  // 개별 키 매칭(객체 우선)
-  let matched = null;
-  for(const o of opts){ if(typeof o==='object' && o.key===e.key){ matched=o; break; } }
-  if(matched){ currentValues[currentStep] = matched.label; stepAdvance(); return; }
-
-  // 숫자키 1~9
-  if(/^[1-9]$/.test(e.key)){
-    const idx = parseInt(e.key,10)-1; if(opts[idx]){
-      const v = opts[idx]; currentValues[currentStep] = (typeof v==='object') ? v.label : v; stepAdvance(); return;
-    }
-  }
+  let matched=null; for(const o of opts){ if(typeof o==='object' && o.key===e.key){ matched=o; break; } }
+  if(matched){ currentValues[currentStep]=matched.label; stepAdvance(); return; }
+  if(/^[1-9]$/.test(e.key)){ const idx=parseInt(e.key,10)-1; if(opts[idx]){ const v=opts[idx]; currentValues[currentStep]=(typeof v==='object')?v.label:v; stepAdvance(); return; } }
 });
+function normalizePlayerKey(key){ const map={'ㅂ':'q','ㅈ':'w','ㄷ':'e','ㄱ':'r','ㅅ':'t'}; if(key.length===1) return (map[key]||key).toLowerCase(); return key; }
 
-/* ====== 단계 전진 + 즉시 기록 처리 ====== */
-function stepAdvance(){
-  // 병살 2아웃 즉시 기록
-  if (currentStep === 7) {
-    const seed = at(4), char = at(5), res = at(6);
-    if (seed==='[내야 땅볼]' && char==='[병살타성]' && res==='[처리 성공(2아웃)]') {
-      cascadeOptions(); currentStep = 8; writeRowAndReset(); return;
-    }
-  }
-
-  // 6단계에서 낫아웃/도루 저지 선택 시 7단계 스킵하고 8단계로
-  if (currentStep === 6 &&
-      (at(6) === '[낫아웃 플레이 관련]' || at(6) === '[도루 저지 관련]')) {
-    currentValues[7] = '-'; // 7단계 스킵
-    currentStep = 8;        // 8단계로 이동
-    cascadeOptions(); renderAll(); saveAll(); return;
-  }
-
-  // 포수/1루수의 일반 FP는 6단계에서 즉시 기록(특수 선택 제외)
-  if (currentStep === 6 && posToGroup(at(3))==='C' && at(4)==='[포수 필드플레이]' && at(6) !== '[낫아웃 플레이 관련]' && at(6) !== '[도루 저지 관련]') {
-    currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
-  }
-  if (currentStep === 6 && posToGroup(at(3))==='C' && (at(4)==='[포수 땅볼]' || at(4)==='[포수 뜬공]')) {
-    currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
-  }
-  if (currentStep === 6 && posToGroup(at(3))==='_1B' && at(4)==='[1루수 필드플레이]') {
-    currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
-  }
-  if (currentStep === 6 && posToGroup(at(3))==='_1B' && (at(4)==='[1루수 땅볼]' || at(4)==='[1루수 뜬공]')) {
-    currentValues[7] = '-'; currentValues[8] = '-'; writeRowAndReset(); return;
-  }
-
-  if (currentStep === 8) { writeRowAndReset(); return; }
-
-  if (currentStep === 3 || currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) { cascadeOptions(); }
-  currentStep = Math.min(currentStep + 1, steps.length - 1);
-  currentStep = autoSkipFrom(currentStep);
-  renderAll(); saveAll();
-}
-
-/* ====== 코드→점수 매핑 / 코드룰 / 기록(자연어) 생성 ====== */
-const CODE_POINTS = {
+/* ========= 코드 → 점수 ========= */
+const CODE_POINTS={
   'G-S-C':1,'G-S-H':2,'G-S-O':0.5,'G-E-O':0,'G-E-F1':-0.5,'G-E-W':-0.5,'G-E-J':-1,'G-E-F2':-1,'G-E-H':0,
-  'CG-S':1,'CG-S-H':2, 'CG-E':-1, 'CG-E-H':0, 'CF-S':1, 'CF-E':-1, 'CF-S-H':2, 'CF-E-H':0,
+  'CG-S':1,'CG-S-H':2,'CG-E':-1,'CG-E-H':0,'CF-S':1,'CF-E':-1,'CF-S-H':2,'CF-E-H':0,
   'GD-S2':2,'GD-S1-TS':1,'GD-S1-PS':1,'GD-S1-TE':-1,'GD-S1-PE':-1,'GD-E-TS':2,'GD-E-PS':0,'GD-E-TE':-2,'GD-E-PE':-2,
   'F-S':1,'F-E':-1,'F-S-H':2,'F-E-H':0,
-  'IFP-A':1,'IFP-FO':1,'IFP-CV':1,'IFP-E':-1,'IFP-CVE':-1,
+
+  'IFP-A':1,'IFP-PO':1,'IFP-CV':1,'IFP-E':-1,'IFP-CVE':-1,
   'OFP-CV':1,'OFP-TH':1,'OFP-A':2,'OFP-E':-1,'OFP-CVE':-1,
-  'CFP-BLK':1,'CFP-PB':-1,'CFP-K-WP-S':1,'CFP-K-WP-E':0,'CFP-K-PB-S':0,'CFP-K-PB-E':-1,
-  '1BGB-S':1,'1BGB-E':-1,'1BGB-S-H':2,'1BGB-E-H':0,'1BFB-S':1,'1BFB-E':-1,'1BFB-S-H':2,'1BFB-E-H':0,
-  '1BFP-A':1,'1BFP-FO':1,'1BFP-CV':1,'1BFP-E':-1,'1BFP-CVE':-1,'1BFP-SC':1,
-  'CFP-CS-2nd':1.5,'CFP-CS-3rd':1
+
+  'CFP-A':1,'CFP-PO':1,'CFP-CV':1,'CFP-E':-1,'CFP-CVE':-1,
+  'CFP-BLK':1,'CFP-PB':-1,
+  'CFP-K-WP-S':1,'CFP-K-WP-E':0,'CFP-K-PB-S':0,'CFP-K-PB-E':-1,
+  'CFP-CS-2nd':1.5,'CFP-CS-3rd':1,
+
+  '1BFP-A':1,'1BFP-PO':1,'1BFP-CV':1,'1BFP-E':-1,'1BFP-CVE':-1,'1BFP-SC':1,
+  '1BGB-S':1,'1BGB-E':-1,'1BGB-S-H':2,'1BGB-E-H':0,
+  '1BFB-S':1,'1BFB-E':-1,'1BFB-S-H':2,'1BFB-E-H':0
 };
-function getDefenseScore(code){ return (code && code in CODE_POINTS) ? CODE_POINTS[code] : '-'; }
+function getDefenseScore(code){ return (code && code in CODE_POINTS)?CODE_POINTS[code]:'-'; }
 
+/* ========= 코드 결정 & 자연어 ========= */
+/* (기존 로직 그대로 — 길어서 생략 없이 유지) */
 function getDefenseCode(vals){
-  const [ , , , pos, seed, char, res, err, fin] = vals;
-  const isIF = (pos==='투수'||pos==='2루수'||pos==='3루수'||pos==='유격수');
-  const isOF = (pos==='좌익수'||pos==='중견수'||pos==='우익수');
-  const is1B = (pos==='1루수');
-  const isC  = (pos==='포수');
+  const [ , , , pos, seed, char, res, err, fin]=vals;
+  const isIF=(pos==='투수'||pos==='2루수'||pos==='3루수'||pos==='유격수');
+  const isOF=(pos==='좌익수'||pos==='중견수'||pos==='우익수');
+  const is1B=(pos==='1루수'); const isC=(pos==='포수');
 
-  if (seed === '[내야 뜬공]' || seed === '[외야 뜬공]') {
-    if (char === '[안타성]') { if (fin === '[처리 성공]' || res === '[처리 성공]') return 'F-S-H'; if (fin === '[실책]'||res==='[실책]') return 'F-E-H'; }
-    else { if (fin === '[처리 성공]' || res === '[처리 성공]') return 'F-S'; if (fin === '[실책]'||res==='[실책]') return 'F-E'; }
+  if(seed==='[내야 뜬공]'||seed==='[외야 뜬공]'){
+    if(char==='[안타성]'){ if(fin==='[처리 성공]'||res==='[처리 성공]') return 'F-S-H'; if(fin==='[실책]'||res==='[실책]') return 'F-E-H'; }
+    else { if(fin==='[처리 성공]'||res==='[처리 성공]') return 'F-S'; if(fin==='[실책]'||res==='[실책]') return 'F-E'; }
   }
 
-  if (isIF && seed === '[내야 땅볼]') {
-    if (char === '[병살타성]') {
-      if (res === '[처리 성공(2아웃)]') return 'GD-S2';
-      if (res === '[처리 성공(1아웃)]') {
-        if (err === '[토스맨]') { if (fin === '[토스맨 무브 클린]') return 'GD-S1-TS'; if (fin === '[토스맨 무브 에러]') return 'GD-S1-TE'; }
-        else if (err === '[피벗맨]') { if (fin === '[피벗맨 무브 클린]') return 'GD-S1-PS'; if (fin === '[피벗맨 무브 에러]') return 'GD-S1-PE'; }
+  if(isIF && seed==='[내야 땅볼]'){
+    if(char==='[병살타성]'){
+      if(res==='[처리 성공(2아웃)]') return 'GD-S2';
+      if(res==='[처리 성공(1아웃)]'){
+        if(err==='[토스맨]'){ if(fin==='[토스맨 무브 클린]') return 'GD-S1-TS'; if(fin==='[토스맨 무브 에러]') return 'GD-S1-TE'; }
+        else if(err==='[피벗맨]'){ if(fin==='[피벗맨 무브 클린]') return 'GD-S1-PS'; if(fin==='[피벗맨 무브 에러]') return 'GD-S1-PE'; }
         return null;
       }
-      if (res === '[처리 실패(0아웃)]') {
-        if (err === '[토스맨]') { if (fin === '[토스맨 무브 에러]') return 'GD-E-TE'; if (fin === '[토스맨 무브 클린]') return 'GD-E-TS'; }
-        else if (err === '[피벗맨]') { if (fin === '[피벗맨 무브 에러]') return 'GD-E-PE'; if (fin === '[피벗맨 무브 클린]') return 'GD-E-PS'; }
+      if(res==='[처리 실패(0아웃)]'){
+        if(err==='[토스맨]'){ if(fin==='[토스맨 무브 에러]') return 'GD-E-TE'; if(fin==='[토스맨 무브 클린]') return 'GD-E-TS'; }
+        else if(err==='[피벗맨]'){ if(fin==='[피벗맨 무브 에러]') return 'GD-E-PE'; if(fin==='[피벗맨 무브 클린]') return 'GD-E-PS'; }
         return null;
       }
       return null;
     }
-    if (char === '[안타성]') { if (fin === '[처리 성공]' || res === '[처리 성공]') return 'G-S-H'; if (fin === '[실책]'||res==='[실책]') return 'G-E-H'; return null; }
-    if (char === '[범타성]') {
-      if (res === '[처리 성공]') { if (fin === '[클린 송구로 처리]') return 'G-S-C'; if (fin === '[오프라인 송구로 처리]') return 'G-S-O'; return 'G-S'; }
-      if (res === '[실책]') {
-        if (err === '[포구 실책]') { if (fin === '[단순 포구 실수]') return 'G-E-F1'; if (fin === '[터널]') return 'G-E-F2'; }
-        else if (err === '[송구 실책]') { if (fin === '[오프라인 송구로 실책]') return 'G-E-O'; if (fin === '[와일드 송구로 실책]') return 'G-E-W'; }
-        else if (err === '[판단 실책]') { return 'G-E-J'; }
+    if(char==='[안타성]'){ if(fin==='[처리 성공]'||res==='[처리 성공]') return 'G-S-H'; if(fin==='[실책]'||res==='[실책]') return 'G-E-H'; return null; }
+    if(char==='[범타성]'){
+      if(res==='[처리 성공]'){ if(fin==='[클린 송구로 처리]') return 'G-S-C'; if(fin==='[오프라인 송구로 처리]') return 'G-S-O'; return 'G-S'; }
+      if(res==='[실책]'){
+        if(err==='[포구 실책]'){ if(fin==='[단순 포구 실수]') return 'G-E-F1'; if(fin==='[터널]') return 'G-E-F2'; }
+        else if(err==='[송구 실책]'){ if(fin==='[오프라인 송구로 실책]') return 'G-E-O'; if(fin==='[와일드 송구로 실책]') return 'G-E-W'; }
+        else if(err==='[판단 실책]'){ return 'G-E-J'; }
       }
       return null;
     }
   }
 
-  if (isOF && seed === '[외야 필드플레이]') {
-    if (fin === '[진루 저지(빠른 커버)]') return 'OFP-CV';
-    if (fin === '[진루 저지(외야 송구)]') return 'OFP-TH';
-    if (fin === '[외야 어시스트]') return 'OFP-A';
-    if (fin === '[추가 진루 허용/아웃 기회 놓침]') return 'OFP-E';
-    if (fin === '[커버 플레이 실책]') return 'OFP-CVE';
+  if(isOF && seed==='[외야 필드플레이]'){
+    if(fin==='[진루 저지(빠른 커버)]') return 'OFP-CV';
+    if(fin==='[진루 저지(외야 송구)]') return 'OFP-TH';
+    if(fin==='[외야 어시스트]') return 'OFP-A';
+    if(fin==='[추가 진루 허용/아웃 기회 놓침]') return 'OFP-E';
+    if(fin==='[커버 플레이 실책]') return 'OFP-CVE';
     return null;
   }
 
-  if (isIF && seed === '[내야 필드플레이]') {
-    if (fin === '[필드 플레이 중 어시스트]') return 'IFP-A';
-    if (fin === '[필드 플레이 중 풋아웃]') return 'IFP-FO';
-    if (fin === '[빠른 커버로 진루 저지]') return 'IFP-CV';
-    if (fin === '[추가 진루 허용/아웃 기회 놓침]') return 'IFP-E';
-    if (fin === '[커버 플레이 실책]') return 'IFP-CVE';
+  if(isIF && seed==='[내야 필드플레이]'){
+    if(fin==='[필드 플레이 중 어시스트]') return 'IFP-A';
+    if(fin==='[필드 플레이 중 풋아웃]')  return 'IFP-PO';
+    if(fin==='[빠른 커버로 진루 저지]')  return 'IFP-CV';
+    if(fin==='[추가 진루 허용/아웃 기회 놓침]') return 'IFP-E';
+    if(fin==='[커버 플레이 실책]')      return 'IFP-CVE';
     return null;
   }
 
-  if (isC && seed === '[포수 땅볼]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'G-S-H' : (res==='[실책]' ? 'G-E-H' : null);
-    return (res==='[처리 성공]') ? 'G-S-C' : (res==='[실책]' ? 'G-E-O' : null);
+  if(isC && seed==='[포수 땅볼]'){
+    if(char==='[안타성]') return (res==='[처리 성공]')?'G-S-H':(res==='[실책]'?'G-E-H':null);
+    return (res==='[처리 성공]')?'G-S-C':(res==='[실책]'?'G-E-O':null);
   }
-  if (isC && seed === '[포수 뜬공]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'F-S-H' : (res==='[실책]' ? 'F-E-H' : null);
-    return (res==='[처리 성공]') ? 'F-S' : (res==='[실책]' ? 'F-E' : null);
+  if(isC && seed==='[포수 뜬공]'){
+    if(char==='[안타성]') return (res==='[처리 성공]')?'F-S-H':(res==='[실책]'?'F-E-H':null);
+    return (res==='[처리 성공]')?'F-S':(res==='[실책]'?'F-E':null);
   }
-
-  if (isC && seed === '[포수 필드플레이]') {
-    // ① 즉시형
-    if (res === '[필드 플레이 중 어시스트]') return 'IFP-A';
-    if (res === '[필드 플레이 중 풋아웃]')  return 'IFP-FO';
-    if (res === '[빠른 커버로 진루 저지]')  return 'IFP-CV';
-    if (res === '[추가 진루 허용/아웃 기회 놓침]') return 'IFP-E';
-    if (res === '[커버 플레이 실책]')      return 'IFP-CVE';
-    if (res === '[블로킹으로 진루 저지]')  return 'CFP-BLK';
-    if (res === '[포일로 진루 허용]')      return 'CFP-PB';
-
-    // ② 특수 세부(현행: res, 구버전: err)
-    if (res === '[낫아웃 플레이 관련]' || err === '[낫아웃 플레이]') {
-      if (fin === '[폭투 낫아웃 플레이 성공]') return 'CFP-K-WP-S';
-      if (fin === '[포일 낫아웃 플레이 성공]') return 'CFP-K-PB-S';
-      if (fin === '[폭투 낫아웃 플레이 실책]') return 'CFP-K-WP-E';
-      if (fin === '[포일 낫아웃 플레이 실책]') return 'CFP-K-PB-E';
+  if(isC && seed==='[포수 필드플레이]'){
+    if(res==='[필드 플레이 중 어시스트]') return 'CFP-A';
+    if(res==='[필드 플레이 중 풋아웃]')  return 'CFP-PO';
+    if(res==='[빠른 커버로 진루 저지]')  return 'CFP-CV';
+    if(res==='[추가 진루 허용/아웃 기회 놓침]') return 'CFP-E';
+    if(res==='[커버 플레이 실책]')      return 'CFP-CVE';
+    if(res==='[블로킹으로 진루 저지]')  return 'CFP-BLK';
+    if(res==='[포일로 진루 허용]')      return 'CFP-PB';
+    if(res==='[낫아웃 플레이 관련]'){
+      if(fin==='[폭투 낫아웃 플레이 성공]') return 'CFP-K-WP-S';
+      if(fin==='[포일 낫아웃 플레이 성공]') return 'CFP-K-PB-S';
+      if(fin==='[폭투 낫아웃 플레이 실책]') return 'CFP-K-WP-E';
+      if(fin==='[포일 낫아웃 플레이 실책]') return 'CFP-K-PB-E';
       return null;
     }
-    if (res === '[도루 저지 관련]' || err === '[도루 저지 플레이]') {
-      if (fin === '[2루 도루 저지 성공]') return 'CFP-CS-2nd';
-      if (fin === '[3루 도루 저지 성공]') return 'CFP-CS-3rd';
+    if(res==='[도루 저지 관련]'){
+      if(fin==='[2루 도루 저지 성공]') return 'CFP-CS-2nd';
+      if(fin==='[3루 도루 저지 성공]') return 'CFP-CS-3rd';
       return null;
     }
     return null;
   }
 
-  if (is1B && seed === '[1루수 땅볼]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'G-S-H' : (res==='[실책]' ? 'G-E-H' : null);
-    return (res==='[처리 성공]') ? 'G-S-C' : (res==='[실책]' ? 'G-E-F1' : null);
+  if(is1B && seed==='[1루수 땅볼]'){
+    if(char==='[안타성]') return (res==='[처리 성공]')?'G-S-H':(res==='[실책]'?'G-E-H':null);
+    return (res==='[처리 성공]')?'G-S-C':(res==='[실책]'?'G-E-F1':null);
   }
-  if (is1B && seed === '[1루수 뜬공]') {
-    if (char === '[안타성]') return (res==='[처리 성공]') ? 'F-S-H' : (res==='[실책]' ? 'F-E-H' : null);
-    return (res==='[처리 성공]') ? 'F-S' : (res==='[실책]' ? 'F-E' : null);
+  if(is1B && seed==='[1루수 뜬공]'){
+    if(char==='[안타성]') return (res==='[처리 성공]')?'F-S-H':(res==='[실책]'?'F-E-H':null);
+    return (res==='[처리 성공]')?'F-S':(res==='[실책]'?'F-E':null);
   }
-  if (is1B && seed === '[1루수 필드플레이]') {
-    if (res === '[필드 플레이 중 어시스트]') return 'IFP-A';
-    if (res === '[필드 플레이 중 풋아웃]')  return 'IFP-FO';
-    if (res === '[빠른 커버로 진루 저지]')  return 'IFP-CV';
-    if (res === '[추가 진루 허용/아웃 기회 놓침]') return 'IFP-E';
-    if (res === '[커버 플레이 실책]')      return 'IFP-CVE';
-    if (res === '[1루수 스쿱 캐치(원바운드 캐치)]') return '1BFP-SC';
+  if(is1B && seed==='[1루수 필드플레이]'){
+    if(res==='[필드 플레이 중 어시스트]') return '1BFP-A';
+    if(res==='[필드 플레이 중 풋아웃]')  return '1BFP-PO';
+    if(res==='[빠른 커버로 진루 저지]')  return '1BFP-CV';
+    if(res==='[추가 진루 허용/아웃 기회 놓침]') return '1BFP-E';
+    if(res==='[커버 플레이 실책]')      return '1BFP-CVE';
+    if(res==='[1루수 스쿱 캐치(원바운드 캐치)]') return '1BFP-SC';
     return null;
   }
   return null;
 }
 
-// 대괄호 제거 & 자연어
-function stripBr(s){ return (s || '').replace(/[\[\]]/g, ''); }
+/* ========= 자연어 표시 ========= */
 function nicePos(pos){ return stripBr(pos); }
-function niceSeed(seed){
-  const s = stripBr(seed);
-  return s.replace(/^(내야|외야|포수|1루수)\s*/, '');
-}
+function niceSeed(seed){ const s=stripBr(seed); return s.replace(/^(내야|외야|포수|1루수)\s*/,''); }
 function buildNaturalRecord(vals){
-  const [ , , , pos, seed, char, res, err, fin] = vals;
-  const P  = nicePos(pos);
-  const S  = niceSeed(seed);
-  const ch = stripBr(char);
-  const r  = stripBr(res);
-  const e  = stripBr(err);
-  const f  = stripBr(fin);
+  const [ , , , pos, seed, char, res, err, fin]=vals;
+  const P=nicePos(pos), S=niceSeed(seed), ch=stripBr(char), r=stripBr(res), e=stripBr(err), f=stripBr(fin);
+  const isIF=(P==='투수'||P==='2루수'||P==='3루수'||P==='유격수'), isC=(P==='포수'), is1B=(P==='1루수');
 
-  const isIF = (P==='투수' || P==='2루수' || P==='3루수' || P==='유격수');
-  const isC  = (P==='포수');
-  const is1B = (P==='1루수');
-  const isOF = (P==='좌익수' || P==='중견수' || P==='우익수');
-
-  // 병살
-  if (isIF && S==='땅볼' && ch==='병살타성'){
-    if (r==='처리 성공(2아웃)') return `${P} ${S} 병살 2아웃`;
-    const roleTxt = (e==='토스맨') ? '토스맨' : (e==='피벗맨') ? '피벗맨' : '';
-    const moveTxt = (f==='토스맨 무브 클린' || f==='피벗맨 무브 클린') ? '클린'
-                 : (f==='토스맨 무브 에러' || f==='피벗맨 무브 에러') ? '에러' : '';
-    if (r==='처리 성공(1아웃)') return `${P} ${S} 병살 1아웃` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
-    if (r==='처리 실패(0아웃)') return `${P} ${S} 병살 실패 (0아웃)` + (roleTxt? ` (${roleTxt} ${moveTxt})`:'');
+  if(isIF && S==='땅볼' && ch==='병살타성'){
+    if(r==='처리 성공(2아웃)') return `${P} ${S} 병살 2아웃`;
+    const roleTxt=(e==='토스맨')?'토스맨':(e==='피벗맨')?'피벗맨':'';
+    const moveTxt=(f?.includes('클린'))?'클린':(f?.includes('에러'))?'에러':'';
+    if(r==='처리 성공(1아웃)') return `${P} ${S} 병살 1아웃`+(roleTxt?` (${roleTxt} ${moveTxt})`:'');
+    if(r==='처리 실패(0아웃)') return `${P} ${S} 병살 실패 (0아웃)`+(roleTxt?` (${roleTxt} ${moveTxt})`:'');
   }
 
-  // 캐처 특수
-  if (isC && S==='필드플레이'){
-    if (r==='낫아웃 플레이 관련'){
-      if (f==='폭투 낫아웃 플레이 성공') return `포수 낫아웃 성공 (폭투)`;
-      if (f==='포일 낫아웃 플레이 성공') return `포수 낫아웃 성공 (포일)`;
-      if (f==='폭투 낫아웃 플레이 실책') return `포수 낫아웃 실책 (폭투)`;
-      if (f==='포일 낫아웃 플레이 실책') return `포수 낫아웃 실책 (포일)`;
+  if(isC && S==='필드플레이'){
+    if(r==='낫아웃 플레이 관련'){
+      if(f==='폭투 낫아웃 플레이 성공') return `포수 낫아웃 성공 (폭투)`;
+      if(f==='포일 낫아웃 플레이 성공') return `포수 낫아웃 성공 (포일)`;
+      if(f==='폭투 낫아웃 플레이 실책') return `포수 낫아웃 실책 (폭투)`;
+      if(f==='포일 낫아웃 플레이 실책') return `포수 낫아웃 실책 (포일)`;
     }
-    if (r==='도루 저지 관련'){
-      if (f==='2루 도루 저지 성공') return `포수 도루 저지 성공 (2루)`;
-      if (f==='3루 도루 저지 성공') return `포수 도루 저지 성공 (3루)`;
+    if(r==='도루 저지 관련'){
+      if(f==='2루 도루 저지 성공') return `포수 도루 저지 성공 (2루)`;
+      if(f==='3루 도루 저지 성공') return `포수 도루 저지 성공 (3루)`;
     }
   }
 
-  // 공통 FP 라벨
-  if (S==='필드플레이'){
-    const fpMap = {
-      '필드 플레이 중 어시스트': '어시스트',
-      '필드 플레이 중 풋아웃': '풋아웃',
-      '빠른 커버로 진루 저지': '진루 저지(커버)',
-      '추가 진루 허용/아웃 기회 놓침': '추가 진루 허용',
-      '커버 플레이 실책': '커버 실책',
-      '진루 저지(빠른 커버)': '진루 저지(커버)',
-      '진루 저지(외야 송구)': '진루 저지(송구)',
-      '외야 어시스트': '어시스트',
-      '블로킹으로 진루 저지': '블로킹',
-      '포일로 진루 허용': '포일 허용',
-      '1루수 스쿱 캐치(원바운드 캐치)': '스쿱캐치'
+  if(S==='필드플레이'){
+    const fpMap={
+      '필드 플레이 중 어시스트':'어시스트',
+      '필드 플레이 중 풋아웃':'풋아웃',
+      '빠른 커버로 진루 저지':'진루 저지(커버)',
+      '추가 진루 허용/아웃 기회 놓침':'추가 진루 허용',
+      '커버 플레이 실책':'커버 실책',
+      '진루 저지(빠른 커버)':'진루 저지(커버)',
+      '진루 저지(외야 송구)':'진루 저지(송구)',
+      '외야 어시스트':'어시스트',
+      '블로킹으로 진루 저지':'블로킹',
+      '포일로 진루 허용':'포일 허용',
+      '1루수 스쿱 캐치(원바운드 캐치)':'스쿱캐치'
     };
-    const word = fpMap[r] || fpMap[f] || '';
-    if (word) return `${P} ${S} ${word}`;
+    const word=fpMap[r]||fpMap[f]||''; if(word) return `${P} ${S} ${word}`;
   }
 
-  // 뜬공
-  if (S==='뜬공'){
-    const base = `${P} ${S}`;
-    if (r==='처리 성공' || f==='처리 성공') return base + (ch==='안타성' ? ' 처리 (안타성)' : ' 처리');
-    if (r==='실책' || f==='실책')         return base + (ch==='안타성' ? ' 실책 (안타성)' : ' 실책');
+  if(S==='뜬공'){
+    const base=`${P} ${S}`;
+    if(r==='처리 성공'||f==='처리 성공') return base+(ch==='안타성'?' 처리 (안타성)':' 처리');
+    if(r==='실책'||f==='실책') return base+(ch==='안타성'?' 실책 (안타성)':' 실책');
   }
 
-  // 땅볼
-  if (S==='땅볼'){
-    if (ch==='안타성'){
-      if (r==='처리 성공') return `${P} ${S} 처리 (안타성)`;
-      if (r==='실책')     return `${P} ${S} 실책 (안타성)`;
+  if(S==='땅볼'){
+    if(ch==='안타성'){
+      if(r==='처리 성공') return `${P} ${S} 처리 (안타성)`;
+      if(r==='실책')     return `${P} ${S} 실책 (안타성)`;
     }
-    if (r==='처리 성공'){
-      if (f==='클린 송구로 처리')      return `${P} ${S} 처리 (클린)`;
-      if (f==='오프라인 송구로 처리')  return `${P} ${S} 처리 (오프라인)`;
+    if(r==='처리 성공'){
+      if(f==='클린 송구로 처리')      return `${P} ${S} 처리 (클린)`;
+      if(f==='오프라인 송구로 처리')  return `${P} ${S} 처리 (오프라인)`;
       return `${P} ${S} 처리`;
     }
-    if (r==='실책'){
-      if (f==='단순 포구 실수') return `${P} ${S} 실책 (포구 실책)`;
-      if (f==='터널')           return `${P} ${S} 실책 (터널)`;
-      if (f==='오프라인 송구로 실책') return `${P} ${S} 실책 (오프라인)`;
-      if (f==='와일드 송구로 실책')   return `${P} ${S} 실책 (와일드)`;
-      if (f==='판단 실책') return `${P} ${S} 실책 (판단 실책)`;
+    if(r==='실책'){
+      if(f==='단순 포구 실수') return `${P} ${S} 실책 (포구 실책)`;
+      if(f==='터널')           return `${P} ${S} 실책 (터널)`;
+      if(f==='오프라인 송구로 실책') return `${P} ${S} 실책 (오프라인)`;
+      if(f==='와일드 송구로 실책')   return `${P} ${S} 실책 (와일드)`;
+      if(f==='판단 실책') return `${P} ${S} 실책 (판단 실책)`;
     }
   }
 
-  const bits = [P, S].filter(Boolean).join(' ');
-  if (!bits) return '-';
-  if (ch==='안타성') return `${bits} (안타성)`;
+  const bits=[P,S].filter(Boolean).join(' '); if(!bits) return '-';
+  if(ch==='안타성') return `${bits} (안타성)`;
   return bits;
 }
 
-/* ====== 기록 쓰기 ====== */
+/* ========= 기록 쓰기 ========= */
 function writeRowAndReset(){
-  if ((at(4) === '[내야 뜬공]' || at(4) === '[외야 뜬공]') && (!at(6) || at(6) === '-')) {
-    if (at(8) === '[처리 성공]') currentValues[6] = '[처리 성공]';
-    if (at(8) === '[실책]')     currentValues[6] = '[실책]';
+  if((at(4)==='[내야 뜬공]'||at(4)==='[외야 뜬공]') && (!at(6)||at(6)==='-')){
+    if(at(8)==='[처리 성공]') currentValues[6]='[처리 성공]';
+    if(at(8)==='[실책]')     currentValues[6]='[실책]';
   }
-  if (at(4) === '[내야 땅볼]' && at(5) === '[안타성]' && (!at(6) || at(6) === '-')) {
-    if (at(8) === '[처리 성공]') currentValues[6] = '[처리 성공]';
-    if (at(8) === '[실책]')     currentValues[6] = '[실책]';
+  if(at(4)==='[내야 땅볼]'&&at(5)==='[안타성]'&&(!at(6)||at(6)==='-')){
+    if(at(8)==='[처리 성공]') currentValues[6]='[처리 성공]';
+    if(at(8)==='[실책]')     currentValues[6]='[실책]';
   }
-  const code = getDefenseCode(currentValues) || '-';
-  const score = getDefenseScore(code);
-  const record = buildNaturalRecord(currentValues);
 
-  const tbody = document.querySelector('#logTable tbody');
-  const tr = tbody.insertRow(0);
-  tr.insertCell(0).innerHTML = '<input type="checkbox" class="rowSel">';
-  tr.insertCell(1).textContent = (++logSeq);
-  for (const v of currentValues) tr.insertCell(-1).textContent = v || '-';
-  tr.insertCell(-1).textContent = record || '-';
-  tr.insertCell(-1).textContent = code;
-  tr.insertCell(-1).textContent = (score === 0 ? '0' : (score || '-'));
+  const code=getDefenseCode(currentValues)||'-';
+  const score=getDefenseScore(code);
+  const record=buildNaturalRecord(currentValues);
+
+  const tbody=document.querySelector('#logTable tbody');
+  const tr=tbody.insertRow(0);
+  tr.insertCell(0).innerHTML='<input type="checkbox" class="rowSel">';
+  tr.insertCell(1).textContent=(++logSeq);
+  for(const v of currentValues) tr.insertCell(-1).textContent=v||'-';
+  tr.insertCell(-1).textContent=record||'-';
+  tr.insertCell(-1).textContent=code;
+  tr.insertCell(-1).textContent=(score===0?'0':(score||'-'));
 
   updateRecentInningFromTable();
-
-  currentStep = 0; currentValues = Array(steps.length).fill('');
+  currentStep=0; currentValues=Array(steps.length).fill('');
   cascadeOptions(); renderAll(); saveAll();
-  renderAdjustmentScores();   // ⬅️ 새 보정점수 갱신
+
+  // 새 로우 반영: 팀 보정값/보정 필요 목록/라인업 리프레시
+  renderAdjustmentScores();
+  renderLineupSummary();
 }
 
-function updateRecentInningFromTable(){
-  const tbody = document.querySelector('#logTable tbody');
-  const first = tbody.rows[0];
-  const tgt = document.getElementById('recentInning');
-  if(!first){ 
-    tgt.textContent = '최근 이닝 : -'; 
-    return; 
-  }
-  const inningCell = first.cells[2]; // 이닝
-  const val = inningCell ? inningCell.textContent : '';
-  tgt.textContent = val ? `최근 이닝 : ${stripBr(val)}` : '최근 이닝 : -';
-}
-
-/* ====== 표 직렬화/복구/CSV/삭제 ====== */
+/* ========= CSV/저장/복구 ========= */
 function serializeTable(){
   const rows=[]; const trs=[...document.querySelectorAll('#logTable tbody tr')];
   trs.forEach(tr=>{
     const tds=[...tr.cells].map(td=>td.textContent);
-    rows.push({
-      seq: tds[1],
-      values: tds.slice(2, 2+steps.length),
-      record: tds[2+steps.length],
-      code:   tds[3+steps.length],
-      score:  tds[4+steps.length]
-    });
+    rows.push({ seq:tds[1], values:tds.slice(2,2+steps.length), record:tds[2+steps.length], code:tds[3+steps.length], score:tds[4+steps.length] });
   });
   return rows;
 }
@@ -1042,257 +706,294 @@ function renderTableFrom(rows){
     tr.insertCell(-1).textContent=r.code||'-';
     tr.insertCell(-1).textContent=(r.score!==undefined?r.score:'-');
   });
-  renderAdjustmentScores(); // ⬅️ 복원 시 보정점수 갱신
 }
 
-// CSV용 이스케이프(쉼표/따옴표만 처리, 인젝션 방지 제거)
-function csvEscape(v){
-  const s = (v ?? '').toString();
-  return '"' + s.replace(/"/g, '""') + '"';
+/* ========= 파일/복구 ========= */
+function saveAll(){
+  try{
+    localStorage.setItem(LS.state, JSON.stringify({ currentStep,currentValues,logSeq,lineupApplied,scheduleName,playerDivMap }));
+    localStorage.setItem(LS.table, JSON.stringify(serializeTable()));
+    localStorage.setItem(LS.lineup, JSON.stringify({ lineupMap,benchPosMap,starterKeys,benchKeys }));
+  }catch(e){ console.warn('저장 실패',e); }
 }
-function sanitizeFilename(name){
-  const s = (name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
-  return s || 'Eagles Defense Log';
+function loadAll(){
+  try{
+    const s=JSON.parse(localStorage.getItem(LS.state)||'null');
+    if(s){
+      currentStep=s.currentStep||0; currentValues=s.currentValues||Array(steps.length).fill(""); logSeq=s.logSeq||0; lineupApplied=!!s.lineupApplied; scheduleName=s.scheduleName||''; playerDivMap=s.playerDivMap||{};
+      const inp=document.getElementById('scheduleName'); if(inp) inp.value=scheduleName; updateSchedulePreview();
+    }
+    const rows=JSON.parse(localStorage.getItem(LS.table)||'null');
+    if(Array.isArray(rows)){ renderTableFrom(rows); }
+    const l=JSON.parse(localStorage.getItem(LS.lineup)||'null');
+    if(l && l.lineupMap){
+      lineupMap=l.lineupMap||{}; benchPosMap=l.benchPosMap||{}; renderLineupSummary(); buildPlayerStepOptions();
+      const hasLineup=Object.values(lineupMap).some(x=>x&&x.trim());
+      lineupApplied=!!hasLineup; document.getElementById('lineupInput').style.display=hasLineup?'none':'block'; document.getElementById('lineupSummary').style.display=hasLineup?'block':'none';
+    }else{
+      document.getElementById('lineupInput').style.display='block'; document.getElementById('lineupSummary').style.display='none';
+    }
+  }catch(e){ console.warn('복구 실패',e); }
 }
-function downloadCSV(){
-  // 1) 헤더 만들기 (# → 성과객체명, 마지막에 일정명 추가)
-  const screenHeads = [...document.querySelectorAll('#logTable thead th')].map(th => th.textContent);
-  screenHeads.shift(); // 체크박스 헤더 제거
-  const csvHeads = [...screenHeads];
-  if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
-  csvHeads.push('일정명');
+function clearAll(){ localStorage.removeItem(LS.state); localStorage.removeItem(LS.table); localStorage.removeItem(LS.lineup); }
 
-  const rows = [csvHeads.map(csvEscape).join(',')];
-
-  // 2) 바디 만들기
-  const trs = [...document.querySelector('#logTable tbody').rows];
-  trs.forEach(tr => {
-    // 체크박스 제외(= seq부터 점수까지)
-    const tds = [...tr.cells].slice(1).map(td => td.textContent.trim());
-    // 성과객체명: 일정명 + 공백 + seq
-    const seq = tds[0] || '';
-    tds[0] = scheduleName ? `${scheduleName} ${seq}` : seq;
-
-    // 점수(마지막 칸)는 숫자로 그대로, 나머지는 CSV 이스케이프
-    const scoreIdx = tds.length - 1;
-    const cells = tds.map((val, idx) => {
-      if (idx === scoreIdx) {
-        const n = parseFloat(val);
-        return Number.isFinite(n) ? String(n) : csvEscape(val);
-      }
-      return csvEscape(val);
-    });
-
-    // 마지막에 일정명 컬럼 추가(문자열)
-    cells.push(csvEscape(scheduleName || ''));
-    rows.push(cells.join(','));
-  });
-
-  // 3) 다운로드
-  const blob = new Blob(["\uFEFF" + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  const fname = `Eagles Defense Log '${sanitizeFilename(scheduleName)}'.csv`;
-  a.download = fname;
-  a.click();
-  URL.revokeObjectURL(a.href);
-
-  // (선택) UI 상태 약간 정리
-  const selAll = document.getElementById('selectAll');
-  if (selAll) selAll.checked = false;
-  updateRecentInningFromTable();
-  saveAll();
-  renderAdjustmentScores();
-}
-
-function deleteSelected(){
-  const tbody = document.querySelector('#logTable tbody');
-  const checked = tbody ? tbody.querySelectorAll('input.rowSel:checked') : [];
-  if (!checked.length) return;
-
-  // 1) 체크된 행 삭제
-  checked.forEach(cb => {
-    const tr = cb.closest('tr');
-    if (tr) tr.remove();
-  });
-
-  // 2) 전체선택 해제
-  const selAll = document.getElementById('selectAll');
-  if (selAll) selAll.checked = false;
-
-  // 3) # 재번호 매기기 (맨 위 행부터 1,2,3…)
-  const rows = [...document.querySelectorAll('#logTable tbody tr')];
-  rows.forEach((tr, i) => { tr.cells[1].textContent = String(rows.length - i); }); 
-  // ↑ 최신 입력이 위로 쌓이므로 역번호. 만약 1,2,3 순서 원하면:  tr.cells[1].textContent = String(i+1);
-
-  // 4) 표시/저장 갱신
-  updateRecentInningFromTable();
-  saveAll();
-  renderAdjustmentScores();
-}
-
-/* ====== ⬇⬇⬇ 추가: CSV 복사 기능 (클립보드) ⬇⬇⬇ ====== */
+/* ========= CSV 유틸 ========= */
+function csvEscape(v){ const s=(v??'').toString(); return '"' + s.replace(/"/g,'""') + '"'; }
+function sanitizeFilename(name){ const s=(name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim(); return s||'Eagles Defense Log'; }
 function tableToCSV_Defense(){
-  // 헤더 구성 (# → 성과객체명, 마지막에 일정명 추가)
   const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
-  screenHeads.shift(); // 체크박스 제거
-  const csvHeads = [...screenHeads];
-  if (csvHeads[0] === '#') csvHeads[0] = '성과객체명';
-  csvHeads.push('일정명');
+  screenHeads.shift(); const csvHeads=[...screenHeads]; if(csvHeads[0]==='#') csvHeads[0]='성과객체명'; csvHeads.push('일정명');
   const lines=[csvHeads.map(csvEscape).join(',')];
-
-  // 바디
   const trs=[...document.querySelector('#logTable tbody').rows];
   trs.forEach(tr=>{
-    const tds=[...tr.cells].slice(1).map(td=>td.textContent.trim()); // 체크박스 제외
-    // 성과객체명: 일정명 + 공백 + seq
-    const seq = tds[0] || '';
-    tds[0] = scheduleName ? `${scheduleName} ${seq}` : seq;
-
-    // 점수는 숫자 그대로, 나머지는 csvEscape
-    const scoreIdx = tds.length - 1;
-    const cells = tds.map((val, idx)=>{
-      if (idx === scoreIdx) {
-        const n = parseFloat(val);
-        return Number.isFinite(n) ? String(n) : csvEscape(val);
-      }
-      return csvEscape(val);
-    });
-
-    // 마지막에 일정명 컬럼 추가
-    cells.push(csvEscape(scheduleName || ''));
-    lines.push(cells.join(','));
+    const tds=[...tr.cells].slice(1).map(td=>td.textContent.trim());
+    const seq=tds[0]||''; tds[0]=scheduleName?`${scheduleName} ${seq}`:seq;
+    const scoreIdx=tds.length-1;
+    const cells=tds.map((val,idx)=>{ if(idx===scoreIdx){ const n=parseFloat(val); return Number.isFinite(n)?String(n):csvEscape(val); } return csvEscape(val); });
+    cells.push(csvEscape(scheduleName||'')); lines.push(cells.join(','));
   });
-
   return lines.join('\n');
 }
-function fallbackCopyTextToClipboard(text){
-  try{
-    const ta=document.createElement('textarea');
-    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    const ok=document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  }catch(e){ return false; }
+function downloadCSV(){
+  const blob=new Blob(["\uFEFF"+tableToCSV_Defense()],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`Eagles Defense Log '${sanitizeFilename(scheduleName)}'.csv`; a.click(); URL.revokeObjectURL(a.href);
+  const selAll=document.getElementById('selectAll'); if(selAll) selAll.checked=false;
 }
+function fallbackCopyTextToClipboard(text){ try{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select(); const ok=document.execCommand('copy'); document.body.removeChild(ta); return ok; }catch(e){ return false; } }
 function copyCSVToClipboard_Defense(){
-  const csv = tableToCSV_Defense();   // UTF-8 (BOM 없이)
-  const btn = document.getElementById('copyCsv');
-  const flash = (msg)=>{
-    if(!btn) return;
-    const orig=btn.textContent; btn.textContent=msg; btn.disabled=true;
-    setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; }, 1200);
-  };
-
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(csv)
-      .then(()=>flash('복사 완료!'))
-      .catch(()=> fallbackCopyTextToClipboard(csv) ? flash('복사 완료!') : flash('복사 실패'));
-  }else{
-    fallbackCopyTextToClipboard(csv) ? flash('복사 완료!') : flash('복사 실패');
-  }
+  const csv=tableToCSV_Defense(); const btn=document.getElementById('copyCsv');
+  const flash=(msg)=>{ if(!btn) return; const orig=btn.textContent; btn.textContent=msg; btn.disabled=true; setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; },1200); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(csv).then(()=>flash('복사 완료!')).catch(()=> fallbackCopyTextToClipboard(csv)?flash('복사 완료!'):flash('복사 실패')); }
+  else{ fallbackCopyTextToClipboard(csv)?flash('복사 완료!'):flash('복사 실패'); }
 }
-/* ====== ⬆⬆⬆ 추가 끝 ====== */
 
-/* ====== 로그 수정모드 ====== */
-let editMode = false;
+/* ========= 로그 수정 ========= */
+let editMode=false;
 function setEditMode(on){
-  editMode = !!on;
-  const table = document.getElementById('logTable');
-  table.classList.toggle('editing', editMode);
-  const btn = document.getElementById('toggleEdit');
-  btn.textContent = `로그 수정: ${editMode?'ON':'OFF'}`;
-
-  // 열 인덱스: 0 chk, 1 seq, 2..(2+steps.length-1) 입력값 9칸, 그 뒤 record, code, score
-  const editableStart = 2;
-  const editableEnd   = 13; // 포함(이닝~점수)
-  const rows = table.tBodies[0].rows;
-  for (const tr of rows){
-    for (let c=editableStart; c<=editableEnd; c++){
-      const td = tr.cells[c];
-      if(!td) continue;
-      td.contentEditable = editMode ? 'true' : 'false';
-      td.classList.toggle('ce', editMode);
-    }
-  }
-  if(!editMode){ saveAll(); updateRecentInningFromTable(); renderAdjustmentScores(); } // ⬅️ 편집 종료 시 갱신
+  editMode=!!on; const table=document.getElementById('logTable');
+  table.classList.toggle('editing',editMode);
+  document.getElementById('toggleEdit').textContent=`로그 수정: ${editMode?'ON':'OFF'}`;
+  const editableStart=2, editableEnd=13; const rows=table.tBodies[0].rows;
+  for(const tr of rows){ for(let c=editableStart;c<=editableEnd;c++){ const td=tr.cells[c]; if(!td) continue; td.contentEditable=editMode?'true':'false'; td.classList.toggle('ce',editMode); } }
+  if(!editMode){ saveAll(); updateRecentInningFromTable(); renderAdjustmentScores(); renderLineupSummary(); }
 }
-document.getElementById('toggleEdit').addEventListener('click', ()=> setEditMode(!editMode));
+document.getElementById('toggleEdit').addEventListener('click',()=> setEditMode(!editMode));
 
-/* ====== 보정점수 계산/렌더 ====== */
+/* ========= 팀 보정값 계산 ========= */
 function computeAdjustmentScores(){
-  const tb = document.querySelector('#logTable tbody');
-  const sums = { '2루수':0, '3루수':0, '유격수':0, '좌익수':0, '중견수':0, '우익수':0, '1루수':0, '포수':0 };
+  const tb=document.querySelector('#logTable tbody');
+  const sums={'2루수':0,'3루수':0,'유격수':0,'좌익수':0,'중견수':0,'우익수':0,'1루수':0,'포수':0,'투수':0};
   for(const tr of tb.rows){
-    const pos = (tr.cells[5]?.textContent||'').trim();
-    const val = (tr.cells[13]?.textContent||'').trim();
-    const sc  = parseFloat(val);
-    if (!Number.isFinite(sc)) continue;
-    if (pos in sums) sums[pos] += sc;
+    const pos=(tr.cells[5]?.textContent||'').trim();
+    const val=(tr.cells[13]?.textContent||'').trim();
+    const sc=parseFloat(val); if(!Number.isFinite(sc)) continue;
+    if(pos in sums) sums[pos]+=sc;
   }
   return {
-    infield:  (sums['2루수'] + sums['3루수'] + sums['유격수']) / 3,
-    outfield: (sums['좌익수'] + sums['중견수'] + sums['우익수']) / 3,
-    first:    sums['1루수'],
-    catcher:  sums['포수'],
-    fcPair:   (sums['1루수'] + sums['포수']) / 2  // ⬅️ 1루+포수 합의 평균
+    IF : (sums['2루수']+sums['3루수']+sums['유격수'])/3,
+    OF : (sums['좌익수']+sums['중견수']+sums['우익수'])/3,
+    P  : sums['투수'],
+    FC : (sums['1루수']+sums['포수'])/2
   };
 }
 
-function renderAdjustmentScores(){
-  const s = computeAdjustmentScores();
-  const fmt = n => (Number.isFinite(n) ? n.toFixed(2) : '-');
-  const html = `
-    <table>
-      <tbody>
-        <tr><td style="text-align:left">내야 보정점수</td><td>${fmt(s.infield)}</td></tr>
-        <tr><td style="text-align:left">외야 보정점수</td><td>${fmt(s.outfield)}</td></tr>
-        <tr><td style="text-align:left">1루 보정점수</td><td>${fmt(s.first)}</td></tr>
-        <tr><td style="text-align:left">포수 보정점수</td><td>${fmt(s.catcher)}</td></tr>
-        <tr><td style="text-align:left">1/포 보정점수</td><td>${fmt(s.fcPair)}</td></tr>
-      </tbody>
-    </table>`;
-  const body = document.getElementById('adjScoreBody');
-  if (body) body.innerHTML = html;
+/* ========= 에러 코드 판정 ========= */
+function isErrorCode(code){
+  if(!code||code==='-') return false;
+  return /^(G-E|F-E|GD-E|CG-E|CF-E|1BGB-E|1BFB-E|IFP-(E|CVE)|OFP-(E|CVE)|1BFP-(E|CVE)|CFP-(E|CVE|PB|K-.*-E))/.test(code);
 }
 
-/* ====== select-all & buttons ====== */
+/* ========= 로그 수집 ========= */
+function getAllLogs(){
+  const tb=document.querySelector('#logTable tbody'); const arr=[];
+  for(const tr of tb.rows){
+    arr.push({
+      player:(tr.cells[4]?.textContent||'').trim(),
+      pos:(tr.cells[5]?.textContent||'').trim(),
+      code:(tr.cells[12]?.textContent||'').trim(),
+      score:parseFloat((tr.cells[13]?.textContent||'').trim())
+    });
+  }
+  return arr;
+}
+
+/* ========= 점수 계산: earned / 보정 필요 판정 ========= */
+/* earned: ‘실제 득점 합계(그냥 전부 합산)’ */
+function calcEarnedScore(playerName, logs){
+  let s=0;
+  for(const row of logs){
+    if(row.player!==playerName) continue;
+    if(Number.isFinite(row.score)) s+=row.score;
+  }
+  return s;
+}
+
+/* 보정 로직(적용하지 않고 ‘필요 여부’와 Δ만 계산) */
+function calcAdjustmentNeed(playerName, homeDiv, logs, teamBase){
+  let home=0, otherPos=0, zeroCutFlag=false, homeError=false;
+  for(const row of logs){
+    if(row.player!==playerName) continue;
+    const div=posToDivision(row.pos);
+    const score=Number.isFinite(row.score)?row.score:null;
+    const code=row.code;
+
+    if(div===homeDiv){
+      if(Number.isFinite(score)) home+=score;
+      if(isErrorCode(code)) homeError=true; // 자기 구분 실책
+    }else{
+      // 타 구분: 양수만 가산, 음수는 0컷(표시만)
+      if(Number.isFinite(score)){
+        if(score>0) otherPos+=score;
+        else if(score<0) zeroCutFlag=true;
+      }
+    }
+  }
+  const mid=home+otherPos;                 // 보정 전 중간점수
+  const base=teamBase[homeDiv]||0;         // 팀 기준
+  const eligible = !homeError && home>=0;  // 보정 가능 조건
+  const need = eligible && mid<base;       // 보정 필요 여부
+  const delta = need ? (base - mid) : 0;   // 필요한 추가 보정치(+)
+
+  return {eligible, need, delta, mid, base, home, zeroCutFlag, homeError};
+}
+
+/* ========= ‘보정이 필요한 선수’ 표 렌더 ========= */
+function renderAdjNeededList(teamBase){
+  const logs=getAllLogs();
+  const tbody=document.getElementById('adjNeededBody'); tbody.innerHTML='';
+  const names=[...new Set(Object.values(lineupMap).filter(Boolean))];
+
+  let shown=0;
+  for(const name of names){
+    const div=playerDivMap[name]||'IF';
+    const r=calcAdjustmentNeed(name, div, logs, teamBase);
+    if(r.need){
+      const reason=`팀 ${div} 기준 ${r.base.toFixed(2)} 미달 (중간 ${r.mid.toFixed(2)})`;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${name}</td><td>${div}</td><td>+${r.delta.toFixed(2)}</td><td>${reason}</td>`;
+      tbody.appendChild(tr);
+      shown++;
+    }
+  }
+  if(!shown){
+    tbody.innerHTML='<tr><td colspan="4" class="hint">현재 보정이 필요한 선수가 없습니다.</td></tr>';
+  }
+}
+
+/* ========= 라인업 요약(earned만 표기 + 보정필요 배지) ========= */
+function renderLineupSummary(){
+  const starterList=document.getElementById('starterList');
+  const benchList=document.getElementById('benchList');
+  starterList.innerHTML=''; benchList.innerHTML='';
+
+  const teamBase=computeAdjustmentScores();
+  const logs=getAllLogs();
+
+  const getEarned=(name)=>{ const s=calcEarnedScore(name,logs); return Number.isFinite(s)? s.toFixed(2) : '-'; };
+  const isNeedAdj=(name)=>{
+    const div=playerDivMap[name]||'IF';
+    const r=calcAdjustmentNeed(name,div,logs,teamBase);
+    return r.need;
+  };
+
+  // 선발
+  starterKeys.forEach(k=>{
+    const name=lineupMap[k]||''; const pos=STARTER_POS_LABEL[k];
+    const earnedHtml = name? `<span class="scoreTag">${getEarned(name)}</span>`:'';
+    const needHtml = (name && isNeedAdj(name)) ? `<span class="badge badge-need">보정필요</span>` : '';
+    const divEl=document.createElement('div');
+    divEl.className='row';
+    divEl.innerHTML = name
+      ? `<span class="key">${k}</span> <span class="badge">${pos}</span> ${name} ${needHtml} ${earnedHtml}`
+      : `<span class="key">${k}</span> <span class="badge">${pos}</span> -`;
+    starterList.appendChild(divEl);
+  });
+
+  // 교체
+  benchKeys.forEach(k=>{
+    const name=lineupMap[k]||''; const basePos=benchPosMap[k]?` <span class="badge">${benchPosMap[k]}</span>`:'';
+    const earnedHtml = name? `<span class="scoreTag">${getEarned(name)}</span>`:'';
+    const needHtml = (name && isNeedAdj(name)) ? `<span class="badge badge-need">보정필요</span>` : '';
+    const divEl=document.createElement('div'); divEl.className='row';
+    divEl.innerHTML=`<span class="key">${k}</span>${basePos} ${name||'-'} ${needHtml} ${earnedHtml}`;
+    benchList.appendChild(divEl);
+  });
+
+  updateRecentInningFromTable();
+  renderAdjustmentScores(); // 팀 기준값 갱신 및 ‘보정 필요’ 표 갱신
+}
+
+/* ========= 팀 보정값 표시 & ‘보정 필요’ 표 갱신 ========= */
+function renderAdjustmentScores(){
+  const s=computeAdjustmentScores();
+  const fmt=n=> (Number.isFinite(n)? n.toFixed(2) : '0.00');
+  const body=document.getElementById('adjScoreBody');
+  body.innerHTML=`
+    <tr><td>IF</td><td>${fmt(s.IF)}</td></tr>
+    <tr><td>OF</td><td>${fmt(s.OF)}</td></tr>
+    <tr><td>FC(1루·포수)</td><td>${fmt(s.FC)}</td></tr>
+  `;
+  renderAdjNeededList(s);
+}
+
+/* ========= 보조 ========= */
+function updateRecentInningFromTable(){
+  const tbody=document.querySelector('#logTable tbody'); const first=tbody.rows[0]; const tgt=document.getElementById('recentInning');
+  if(!first){ tgt.textContent='최근 이닝 : -'; return; }
+  const val=first.cells[2]?first.cells[2].textContent:''; tgt.textContent=val?`최근 이닝 : ${stripBr(val)}`:'최근 이닝 : -';
+}
+
+/* ========= 버튼들 ========= */
 (function(){
   const selAll=document.getElementById('selectAll');
   selAll.addEventListener('change',()=>{ const boxes=[...document.querySelectorAll('#logTable tbody .rowSel')]; boxes.forEach(b=>b.checked=selAll.checked); });
-  document.getElementById('deleteSelected').addEventListener('click', deleteSelected);
-  document.getElementById('exportCsv').addEventListener('click', downloadCSV);
-
-  // ⬇⬇⬇ 추가: CSV 복사 버튼 연결
-  const copyBtn = document.getElementById('copyCsv');
-  if (copyBtn) copyBtn.addEventListener('click', copyCSVToClipboard_Defense);
-  // ⬆⬆⬆ 추가 끝
-
-  document.getElementById('resetAll').addEventListener('click', ()=>{
+  document.getElementById('deleteSelected').addEventListener('click',()=>{
+    const tbody=document.querySelector('#logTable tbody');
+    const checked=tbody?tbody.querySelectorAll('input.rowSel:checked'):[];
+    if(!checked.length) return;
+    checked.forEach(cb=>{ const tr=cb.closest('tr'); if(tr) tr.remove(); });
+    const rows=[...document.querySelectorAll('#logTable tbody tr')]; rows.forEach((tr,i)=>{ tr.cells[1].textContent=String(rows.length - i); });
+    const selAll=document.getElementById('selectAll'); if(selAll) selAll.checked=false;
+    updateRecentInningFromTable(); saveAll(); renderAdjustmentScores(); renderLineupSummary();
+  });
+  document.getElementById('exportCsv').addEventListener('click',downloadCSV);
+  document.getElementById('copyCsv').addEventListener('click',copyCSVToClipboard_Defense);
+  document.getElementById('resetAll').addEventListener('click',()=>{
     if(!confirm('정말 전체 초기화할까요? (진행상태/라인업/로그/저장데이터 삭제)')) return;
     document.querySelector('#logTable tbody').innerHTML='';
     logSeq=0; currentStep=0; currentValues=Array(steps.length).fill('');
-    lineupMap={}; benchPosMap={}; lineupApplied=false; scheduleName='';
-    document.getElementById('lineupInput').style.display='block';
-    document.getElementById('lineupSummary').style.display='none';
-    clearLineupInputs(); clearAll(); cascadeOptions(); renderAll();
-    updateRecentInningFromTable();
-    renderAdjustmentScores(); // ⬅️ 초기화 후 갱신
+    lineupMap={}; benchPosMap={}; playerDivMap={}; lineupApplied=false; scheduleName='';
+    document.getElementById('lineupInput').style.display='block'; document.getElementById('lineupSummary').style.display='none';
+    clearLineupInputs(); clearAll(); cascadeOptions(); renderAll(); updateRecentInningFromTable(); renderAdjustmentScores();
   });
 })();
 
-/* ====== 부트 ====== */
-window.addEventListener('load', ()=>{
-  // 저장된 상태/라인업 먼저 복구 → 그다음 계산/렌더
+/* ========= 단계 이동 ========= */
+function stepAdvance(){
+  if(currentStep===7){
+    const seed=at(4), ch=at(5), res=at(6);
+    if(seed==='[내야 땅볼]' && ch==='[병살타성]' && res==='[처리 성공(2아웃)]'){ cascadeOptions(); currentStep=8; writeRowAndReset(); return; }
+  }
+  if(currentStep===6 && (at(6)==='[낫아웃 플레이 관련]'||at(6)==='[도루 저지 관련]')){ currentValues[7]='-'; currentStep=8; cascadeOptions(); renderAll(); saveAll(); return; }
+  if(currentStep===6 && posToGroup(at(3))==='C' && at(4)==='[포수 필드플레이]' && at(6)!=='[낫아웃 플레이 관련]' && at(6)!=='[도루 저지 관련]'){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+  if(currentStep===6 && posToGroup(at(3))==='C' && (at(4)==='[포수 땅볼]'||at(4)==='[포수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+  if(currentStep===6 && posToGroup(at(3))==='_1B' && (at(4)==='[1루수 필드플레이]'||at(4)==='[1루수 땅볼]'||at(4)==='[1루수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+
+  if(currentStep===8){ writeRowAndReset(); return; }
+  if(currentStep===3||currentStep===4||currentStep===5||currentStep===6||currentStep===7) cascadeOptions();
+  currentStep=Math.min(currentStep+1, steps.length-1); currentStep=autoSkipFrom(currentStep); renderAll(); saveAll();
+}
+
+/* ========= 부트 ========= */
+window.addEventListener('load',()=>{
   loadAll();
   buildPlayerStepOptions();
   cascadeOptions();
   currentStep = autoSkipFrom(currentStep);
   renderAll();
   updateRecentInningFromTable();
-  renderAdjustmentScores(); // ⬅️ 초기 렌더
+  renderAdjustmentScores();
+  if(lineupApplied){ renderLineupSummary(); }
 });
 </script>
 </body>
