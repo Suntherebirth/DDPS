@@ -404,25 +404,77 @@ function resolveErrOptions(){
   setStepOptions(7,isIFGB_B_E?ERR_IF_GB:['-']);
 }
 function resolveFinalOptions(){
-  const grp=posToGroup(at(3)); const seed=at(4); const err=at(7); const res=at(6);
-  if(grp==='C'){ if(seed==='[포수 필드플레이]'){ if(res==='[낫아웃 플레이 관련]'){ setStepOptions(8,C_NA_FINAL); return; } if(res==='[도루 저지 관련]'){ setStepOptions(8,C_CS_FINAL); return; } } setStepOptions(8,['-']); return; }
-  if(grp==='_1B'){ setStepOptions(8,['-']); return; }
-  if(seed==='[내야 필드플레이]'||seed==='[외야 필드플레이]'){ if(grp==='IF'&&seed==='[내야 필드플레이]') setStepOptions(8,FINAL_DICT.IF_FP); else if(grp==='OF'&&seed==='[외야 필드플레이]') setStepOptions(8,FINAL_DICT.OF_FP); else setStepOptions(8,['-']); return; }
-  if(seed==='[내야 뜬공]'){ setStepOptions(8,FINAL_DICT.IF_FB_any); return; }
-  if(seed==='[외야 뜬공]'){ setStepOptions(8,FINAL_DICT.OF_FB_any); return; }
-  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[안타성]'){ setStepOptions(8,[{key:'1',label:'[처리 성공]',cls:'green'},{key:'2',label:'[실책]',cls:'red'}]); return; }
-  if(grp==='IF'&&seed==='[내야 땅볼]'&&at(5)==='[범타성]'){
-    if(at(6)==='[처리 성공]') setStepOptions(8,FINAL_DICT.IF_GB_B_O);
-    else if(at(6)==='[실책]'){
-      if(at(7)==='[포구 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_FMB);
-      else if(at(7)==='[송구 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_THROW);
-      else if(at(7)==='[판단 실책]') setStepOptions(8,FINAL_DICT.IF_GB_B_E_JUDG);
-      else setStepOptions(8,['-']);
-    } else setStepOptions(8,['-']);
+  const grp  = posToGroup(at(3));
+  const seed = at(4);
+  const char = at(5);
+  const res  = at(6);
+  const err  = at(7);
+
+  // ★ 병살타성: 최종 옵션 세팅
+  if (grp==='IF' && seed==='[내야 땅볼]' && char==='[병살타성]') {
+    // 2아웃은 stepAdvance에서 즉시 기록 처리 → 최종 선택 불필요
+    if (res==='[처리 성공(2아웃)]') { setStepOptions(8, ['-']); return; }
+
+    // 1아웃 / 0아웃: 역할(토스맨/피벗맨)에 따라 최종(무브 클린/에러) 노출
+    if (res==='[처리 성공(1아웃)]' || res==='[처리 실패(0아웃)]') {
+      if (err==='[토스맨]')   { setStepOptions(8, FINAL_DICT.DP_TOSS_FINAL);   return; }
+      if (err==='[피벗맨]')   { setStepOptions(8, FINAL_DICT.DP_PIVOT_FINAL);  return; }
+      // 역할을 아직 안 골랐으면 최종은 잠시 막아둠
+      setStepOptions(8, ['-']); 
+      return;
+    }
+    // 병살타성인데 res 미선택 시
+    setStepOptions(8, ['-']);
     return;
   }
-  setStepOptions(8,['-']);
+
+  // === 일반 플로우 ===
+  if (grp==='C') {
+    if (seed==='[포수 필드플레이]') {
+      if (res==='[낫아웃 플레이 관련]') { setStepOptions(8, C_NA_FINAL); return; }
+      if (res==='[도루 저지 관련]')   { setStepOptions(8, C_CS_FINAL); return; }
+    }
+    setStepOptions(8, ['-']); 
+    return;
+  }
+
+  if (grp==='_1B') { setStepOptions(8, ['-']); return; }
+
+  if (seed==='[내야 필드플레이]' || seed==='[외야 필드플레이]') {
+    if (grp==='IF' && seed==='[내야 필드플레이]')      setStepOptions(8, FINAL_DICT.IF_FP);
+    else if (grp==='OF' && seed==='[외야 필드플레이]') setStepOptions(8, FINAL_DICT.OF_FP);
+    else                                               setStepOptions(8, ['-']);
+    return;
+  }
+
+  if (seed==='[내야 뜬공]') { setStepOptions(8, FINAL_DICT.IF_FB_any); return; }
+  if (seed==='[외야 뜬공]') { setStepOptions(8, FINAL_DICT.OF_FB_any); return; }
+
+  if (grp==='IF' && seed==='[내야 땅볼]' && char==='[안타성]') {
+    setStepOptions(8, [
+      {key:'1', label:'[처리 성공]', cls:'green'},
+      {key:'2', label:'[실책]',     cls:'red'}
+    ]);
+    return;
+  }
+
+  if (grp==='IF' && seed==='[내야 땅볼]' && char==='[범타성]') {
+    if (res==='[처리 성공]') {
+      setStepOptions(8, FINAL_DICT.IF_GB_B_O);
+    } else if (res==='[실책]') {
+      if (err==='[포구 실책]')   setStepOptions(8, FINAL_DICT.IF_GB_B_E_FMB);
+      else if (err==='[송구 실책]') setStepOptions(8, FINAL_DICT.IF_GB_B_E_THROW);
+      else if (err==='[판단 실책]') setStepOptions(8, FINAL_DICT.IF_GB_B_E_JUDG);
+      else                         setStepOptions(8, ['-']);
+    } else {
+      setStepOptions(8, ['-']);
+    }
+    return;
+  }
+
+  setStepOptions(8, ['-']);
 }
+
 function cascadeOptions(){ resolveSeedOptions(); resolveCharOptions(); resolveResOptions(); resolveErrOptions(); resolveFinalOptions(); }
 
 /* ========= 자동 스킵 ========= */
