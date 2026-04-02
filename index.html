@@ -793,16 +793,43 @@ function clearAll(){ localStorage.removeItem(LS.state); localStorage.removeItem(
 function csvEscape(v){ const s=(v??'').toString(); return '"' + s.replace(/"/g,'""') + '"'; }
 function sanitizeFilename(name){ const s=(name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim(); return s||'Eagles Defense Log'; }
 function tableToCSV_Defense(){
-  const screenHeads=[...document.querySelectorAll('#logTable thead th')].map(th=>th.textContent);
-  screenHeads.shift(); const csvHeads=[...screenHeads]; if(csvHeads[0]==='#') csvHeads[0]='성과객체명'; csvHeads.push('일정명');
+  const csvHeads=['event_id','inning','batting_order','player_name','position','hit_type','character','process_1','process_2','final_result','description','code','score_value','game_name'];
   const lines=[csvHeads.map(csvEscape).join(',')];
   const trs=[...document.querySelector('#logTable tbody').rows];
   trs.forEach(tr=>{
-    const tds=[...tr.cells].slice(1).map(td=>td.textContent.trim());
-    const seq=tds[0]||''; tds[0]=scheduleName?`${scheduleName} ${seq}`:seq;
-    const scoreIdx=tds.length-1;
-    const cells=tds.map((val,idx)=>{ if(idx===scoreIdx){ const n=parseFloat(val); return Number.isFinite(n)?String(n):csvEscape(val); } return csvEscape(val); });
-    cells.push(csvEscape(scheduleName||'')); lines.push(cells.join(','));
+    const tds=[...tr.cells].slice(1).map(td=>stripBr(td.textContent.trim()));
+    const cleanSchedule=stripBr(scheduleName||'');
+    const seq=tds[0]||'';
+    const eventId=cleanSchedule?`${cleanSchedule} ${seq}`:seq;
+    const rawScore=tds[12]||'';
+
+    let scoreValue;
+    if(rawScore==='-'){
+      scoreValue='0';
+    }else{
+      const n=parseFloat(rawScore);
+      scoreValue=Number.isFinite(n)?String(n):rawScore;
+    }
+
+    const mapped=[
+      eventId,
+      tds[1]||'',
+      tds[2]||'',
+      tds[3]||'',
+      tds[4]||'',
+      tds[5]||'',
+      tds[6]||'',
+      tds[7]||'',
+      tds[8]||'',
+      tds[9]||'',
+      tds[10]||'',
+      tds[11]||'',
+      scoreValue,
+      cleanSchedule
+    ];
+
+    const cells=mapped.map((val,idx)=> idx===12 ? val : csvEscape(val));
+    lines.push(cells.join(','));
   });
   return lines.join('\n');
 }
