@@ -215,18 +215,72 @@ function isTypingInEditable(e){
 }
 function stripBr(s){ return (s||'').replace(/[\[\]]/g,''); }
 
+const STEP_IDX={ INN:0, ORDER:1, PLAYER:2, POS:3, SEED:4, CHAR:5, RES:6, ERR:7, FINAL:8 };
+const LOG_COL={
+  CHECK:0,
+  SEQ:1,
+  INNING:2,
+  ORDER:3,
+  PLAYER:4,
+  POSITION:5,
+  HIT_TYPE:6,
+  CHARACTER:7,
+  PROCESS_1:8,
+  PROCESS_2:9,
+  FINAL_RESULT:10,
+  DESCRIPTION:11,
+  CODE:12,
+  SCORE:13
+};
+
+const POS_GROUP={
+  IF: new Set(['투수','2루수','3루수','유격수']),
+  OF: new Set(['좌익수','중견수','우익수'])
+};
+
+function getCellText(tr, index){
+  return (tr?.cells[index]?.textContent||'').trim();
+}
+
+function shouldCascadeAfter(stepIndex){
+  return stepIndex>=STEP_IDX.POS && stepIndex<=STEP_IDX.ERR;
+}
+
 /* ========= 라인업/상태 ========= */
 let starterKeys=["1","2","3","4","5","6","7","8","9"];
 let benchKeys=["q","w","e","r","t"];
 const STARTER_POS_LABEL={"1":"투수","2":"포수","3":"1루수","4":"2루수","5":"3루수","6":"유격수","7":"좌익수","8":"중견수","9":"우익수"};
 const POS_OPTIONS=["투수","포수","1루수","2루수","3루수","유격수","좌익수","중견수","우익수"];
-const DIV_OPTIONS=[{v:"IF",t:"IF(2·3·유)"},{v:"OF",t:"OF(좌·중·우)"},{v:"P",t:"P(투수)"},{v:"FC",t:"FC(1루·포수)"}];
+const DIV_OPTIONS=[{v:"IF",t:"IF(1·2·3·유)"},{v:"OF",t:"OF(좌·중·우)"},{v:"P",t:"P(투수)"},{v:"C",t:"C(포수)"}];
 
 let lineupMap={};          // 키 → 선수명
 let benchPosMap={};        // 교체 기본 포지션(선택)
-let playerDivMap={};       // 선수명 → 구분(IF/OF/P/FC)
+let playerDivMap={};       // 선수명 → 구분(IF/OF/P/C)
 let lineupApplied=false;
 let scheduleName='';
+
+function normalizeDivisionByPos(div, pos){
+  if(pos==='포수' && div==='FC') return 'C';
+  if(pos==='1루수' && div==='FC') return 'IF';
+  return div;
+}
+
+function normalizePlayerDivMapByLineup(){
+  for(let i=0;i<9;i++){
+    const key=starterKeys[i];
+    const name=lineupMap[key];
+    if(!name) continue;
+    const pos=STARTER_POS_LABEL[key]||'';
+    playerDivMap[name]=normalizeDivisionByPos(playerDivMap[name]||'IF', pos);
+  }
+  for(let i=0;i<5;i++){
+    const key=benchKeys[i];
+    const name=lineupMap[key];
+    if(!name) continue;
+    const pos=benchPosMap[key]||'';
+    playerDivMap[name]=normalizeDivisionByPos(playerDivMap[name]||'IF', pos);
+  }
+}
 
 /* ========= 단계/선택 ========= */
 const steps=[
@@ -325,13 +379,14 @@ function applyLineup(){
   lineupMap={}; benchPosMap={}; playerDivMap={};
   for(let i=0;i<9;i++){
     const name=(document.getElementById(`starter${i}`)?.value||'').trim();
-    const div=(document.getElementById(`starterDiv${i}`)?.value||'IF');
+    const pos=STARTER_POS_LABEL[starterKeys[i]]||'';
+    const div=normalizeDivisionByPos((document.getElementById(`starterDiv${i}`)?.value||'IF'), pos);
     if(name){ lineupMap[starterKeys[i]]=name; playerDivMap[name]=div; }
   }
   for(let i=0;i<5;i++){
     const name=(document.getElementById(`bench${i}`)?.value||'').trim();
     const pos =(document.getElementById(`benchPos${i}`)?.value||'').trim();
-    const div =(document.getElementById(`benchDiv${i}`)?.value||'IF');
+    const div =normalizeDivisionByPos((document.getElementById(`benchDiv${i}`)?.value||'IF'), pos);
     if(name){ lineupMap[benchKeys[i]]=name; playerDivMap[name]=div; }
     if(pos){ benchPosMap[benchKeys[i]]=pos; }
   }
@@ -362,15 +417,16 @@ function buildPlayerStepOptions(){
 function posToGroup(pos){
   if(pos==='포수') return 'C';
   if(pos==='1루수') return '_1B';
-  if(pos==='좌익수'||pos==='중견수'||pos==='우익수') return 'OF';
-  if(pos==='투수'||pos==='2루수'||pos==='3루수'||pos==='유격수') return 'IF';
+  if(POS_GROUP.OF.has(pos)) return 'OF';
+  if(POS_GROUP.IF.has(pos)) return 'IF';
   return 'IF';
 }
 function posToDivision(pos){
   if(pos==='투수') return 'P';
-  if(pos==='좌익수'||pos==='중견수'||pos==='우익수') return 'OF';
-  if(pos==='1루수'||pos==='포수') return 'FC';
-  if(pos==='2루수'||pos==='3루수'||pos==='유격수') return 'IF';
+  if(POS_GROUP.OF.has(pos)) return 'OF';
+  if(pos==='포수') return 'C';
+  if(pos==='1루수') return 'IF';
+  if(POS_GROUP.IF.has(pos)) return 'IF';
   return 'IF';
 }
 
@@ -779,7 +835,7 @@ function loadAll(){
     if(Array.isArray(rows)){ renderTableFrom(rows); }
     const l=JSON.parse(localStorage.getItem(LS.lineup)||'null');
     if(l && l.lineupMap){
-      lineupMap=l.lineupMap||{}; benchPosMap=l.benchPosMap||{}; renderLineupSummary(); buildPlayerStepOptions();
+      lineupMap=l.lineupMap||{}; benchPosMap=l.benchPosMap||{}; normalizePlayerDivMapByLineup(); renderLineupSummary(); buildPlayerStepOptions();
       const hasLineup=Object.values(lineupMap).some(x=>x&&x.trim());
       lineupApplied=!!hasLineup; document.getElementById('lineupInput').style.display=hasLineup?'none':'block'; document.getElementById('lineupSummary').style.display=hasLineup?'block':'none';
     }else{
@@ -792,6 +848,12 @@ function clearAll(){ localStorage.removeItem(LS.state); localStorage.removeItem(
 /* ========= CSV 유틸 ========= */
 function csvEscape(v){ const s=(v??'').toString(); return '"' + s.replace(/"/g,'""') + '"'; }
 function sanitizeFilename(name){ const s=(name||'').toString().trim().replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim(); return s||'Eagles Defense Log'; }
+function normalizeScoreForCsv(rawScore){
+  if(rawScore==='-') return '0';
+  const n=parseFloat(rawScore);
+  return Number.isFinite(n) ? String(n) : rawScore;
+}
+
 function tableToCSV_Defense(){
   const csvHeads=['event_id','inning','batting_order','player_name','position','hit_type','character','process_1','process_2','final_result','description','code','score_value','game_name'];
   const lines=[csvHeads.map(csvEscape).join(',')];
@@ -801,15 +863,7 @@ function tableToCSV_Defense(){
     const cleanSchedule=stripBr(scheduleName||'');
     const seq=tds[0]||'';
     const eventId=cleanSchedule?`${cleanSchedule} ${seq}`:seq;
-    const rawScore=tds[12]||'';
-
-    let scoreValue;
-    if(rawScore==='-'){
-      scoreValue='0';
-    }else{
-      const n=parseFloat(rawScore);
-      scoreValue=Number.isFinite(n)?String(n):rawScore;
-    }
+    const scoreValue=normalizeScoreForCsv(tds[12]||'');
 
     const mapped=[
       eventId,
@@ -852,7 +906,7 @@ function setEditMode(on){
   editMode=!!on; const table=document.getElementById('logTable');
   table.classList.toggle('editing',editMode);
   document.getElementById('toggleEdit').textContent=`로그 수정: ${editMode?'ON':'OFF'}`;
-  const editableStart=2, editableEnd=13; const rows=table.tBodies[0].rows;
+  const editableStart=LOG_COL.INNING, editableEnd=LOG_COL.SCORE; const rows=table.tBodies[0].rows;
   for(const tr of rows){ for(let c=editableStart;c<=editableEnd;c++){ const td=tr.cells[c]; if(!td) continue; td.contentEditable=editMode?'true':'false'; td.classList.toggle('ce',editMode); } }
   if(!editMode){ saveAll(); updateRecentInningFromTable(); renderAdjustmentScores(); renderLineupSummary(); }
 }
@@ -863,16 +917,16 @@ function computeAdjustmentScores(){
   const tb=document.querySelector('#logTable tbody');
   const sums={'2루수':0,'3루수':0,'유격수':0,'좌익수':0,'중견수':0,'우익수':0,'1루수':0,'포수':0,'투수':0};
   for(const tr of tb.rows){
-    const pos=(tr.cells[5]?.textContent||'').trim();
-    const val=(tr.cells[13]?.textContent||'').trim();
+    const pos=getCellText(tr, LOG_COL.POSITION);
+    const val=getCellText(tr, LOG_COL.SCORE);
     const sc=parseFloat(val); if(!Number.isFinite(sc)) continue;
     if(pos in sums) sums[pos]+=sc;
   }
   return {
-    IF : (sums['2루수']+sums['3루수']+sums['유격수'])/3,
+    IF : (sums['1루수']+sums['2루수']+sums['3루수']+sums['유격수'])/4,
     OF : (sums['좌익수']+sums['중견수']+sums['우익수'])/3,
     P  : sums['투수'],
-    FC : (sums['1루수']+sums['포수'])/2
+    C  : sums['포수']
   };
 }
 
@@ -887,10 +941,10 @@ function getAllLogs(){
   const tb=document.querySelector('#logTable tbody'); const arr=[];
   for(const tr of tb.rows){
     arr.push({
-      player:(tr.cells[4]?.textContent||'').trim(),
-      pos:(tr.cells[5]?.textContent||'').trim(),
-      code:(tr.cells[12]?.textContent||'').trim(),
-      score:parseFloat((tr.cells[13]?.textContent||'').trim())
+      player:getCellText(tr, LOG_COL.PLAYER),
+      pos:getCellText(tr, LOG_COL.POSITION),
+      code:getCellText(tr, LOG_COL.CODE),
+      score:parseFloat(getCellText(tr, LOG_COL.SCORE))
     });
   }
   return arr;
@@ -909,6 +963,7 @@ function calcEarnedScore(playerName, logs){
 
 /* 보정 로직(적용하지 않고 ‘필요 여부’와 Δ만 계산) */
 function calcAdjustmentNeed(playerName, homeDiv, logs, teamBase){
+  const normalizedHomeDiv = homeDiv==='FC' ? 'IF' : homeDiv;
   let home=0, otherPos=0, zeroCutFlag=false, homeError=false;
   for(const row of logs){
     if(row.player!==playerName) continue;
@@ -916,7 +971,7 @@ function calcAdjustmentNeed(playerName, homeDiv, logs, teamBase){
     const score=Number.isFinite(row.score)?row.score:null;
     const code=row.code;
 
-    if(div===homeDiv){
+    if(div===normalizedHomeDiv){
       if(Number.isFinite(score)) home+=score;
       if(isErrorCode(code)) homeError=true; // 자기 구분 실책
     }else{
@@ -928,7 +983,7 @@ function calcAdjustmentNeed(playerName, homeDiv, logs, teamBase){
     }
   }
   const mid=home+otherPos;                 // 보정 전 중간점수
-  const base=teamBase[homeDiv]||0;         // 팀 기준
+  const base=teamBase[normalizedHomeDiv]||0; // 팀 기준
   const eligible = !homeError && home>=0;  // 보정 가능 조건
   const need = eligible && mid<base;       // 보정 필요 여부
   const delta = need ? (base - mid) : 0;   // 필요한 추가 보정치(+)
@@ -1010,7 +1065,7 @@ function renderAdjustmentScores(){
   body.innerHTML=`
     <tr><td>IF</td><td>${fmt(s.IF)}</td></tr>
     <tr><td>OF</td><td>${fmt(s.OF)}</td></tr>
-    <tr><td>FC(1루·포수)</td><td>${fmt(s.FC)}</td></tr>
+    <tr><td>C(포수)</td><td>${fmt(s.C)}</td></tr>
   `;
   renderAdjNeededList(s);
 }
@@ -1019,7 +1074,8 @@ function renderAdjustmentScores(){
 function updateRecentInningFromTable(){
   const tbody=document.querySelector('#logTable tbody'); const first=tbody.rows[0]; const tgt=document.getElementById('recentInning');
   if(!first){ tgt.textContent='최근 이닝 : -'; return; }
-  const val=first.cells[2]?first.cells[2].textContent:''; tgt.textContent=val?`최근 이닝 : ${stripBr(val)}`:'최근 이닝 : -';
+  const val=getCellText(first, LOG_COL.INNING);
+  tgt.textContent=val?`최근 이닝 : ${stripBr(val)}`:'최근 이닝 : -';
 }
 
 /* ========= 버튼들 ========= */
@@ -1049,17 +1105,17 @@ function updateRecentInningFromTable(){
 
 /* ========= 단계 이동 ========= */
 function stepAdvance(){
-  if(currentStep===7){
+  if(currentStep===STEP_IDX.ERR){
     const seed=at(4), ch=at(5), res=at(6);
     if(seed==='[내야 땅볼]' && ch==='[병살타성]' && res==='[처리 성공(2아웃)]'){ cascadeOptions(); currentStep=8; writeRowAndReset(); return; }
   }
-  if(currentStep===6 && (at(6)==='[낫아웃 플레이 관련]'||at(6)==='[도루 저지 관련]')){ currentValues[7]='-'; currentStep=8; cascadeOptions(); renderAll(); saveAll(); return; }
-  if(currentStep===6 && posToGroup(at(3))==='C' && at(4)==='[포수 필드플레이]' && at(6)!=='[낫아웃 플레이 관련]' && at(6)!=='[도루 저지 관련]'){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
-  if(currentStep===6 && posToGroup(at(3))==='C' && (at(4)==='[포수 땅볼]'||at(4)==='[포수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
-  if(currentStep===6 && posToGroup(at(3))==='_1B' && (at(4)==='[1루수 필드플레이]'||at(4)==='[1루수 땅볼]'||at(4)==='[1루수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+  if(currentStep===STEP_IDX.RES && (at(6)==='[낫아웃 플레이 관련]'||at(6)==='[도루 저지 관련]')){ currentValues[7]='-'; currentStep=8; cascadeOptions(); renderAll(); saveAll(); return; }
+  if(currentStep===STEP_IDX.RES && posToGroup(at(3))==='C' && at(4)==='[포수 필드플레이]' && at(6)!=='[낫아웃 플레이 관련]' && at(6)!=='[도루 저지 관련]'){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+  if(currentStep===STEP_IDX.RES && posToGroup(at(3))==='C' && (at(4)==='[포수 땅볼]'||at(4)==='[포수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
+  if(currentStep===STEP_IDX.RES && posToGroup(at(3))==='_1B' && (at(4)==='[1루수 필드플레이]'||at(4)==='[1루수 땅볼]'||at(4)==='[1루수 뜬공]')){ currentValues[7]='-'; currentValues[8]='-'; writeRowAndReset(); return; }
 
-  if(currentStep===8){ writeRowAndReset(); return; }
-  if(currentStep===3||currentStep===4||currentStep===5||currentStep===6||currentStep===7) cascadeOptions();
+  if(currentStep===STEP_IDX.FINAL){ writeRowAndReset(); return; }
+  if(shouldCascadeAfter(currentStep)) cascadeOptions();
   currentStep=Math.min(currentStep+1, steps.length-1); currentStep=autoSkipFrom(currentStep); renderAll(); saveAll();
 }
 
